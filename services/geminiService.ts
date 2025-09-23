@@ -72,18 +72,50 @@ const learningPlanSchema = {
 
 export const generateLearningPlan = async (studentNeeds: string, gradeLevel: string): Promise<LearningPlan> => {
   const gradeLabel = gradeLevelMap[gradeLevel] || 'default level';
+  
+  // Curriculum knowledge for each level
+  const curriculumContext: { [key: string]: string } = {
+    junior: `Junior Level (4th-5th Grade) curriculum includes: basic vocabulary (family, school, colors, numbers), present tense verbs, simple sentence structure, question words, basic adjectives, simple prepositions, personal information, present continuous, and basic plurals.`,
+    level1: `Level 1 (6th-7th Grade) curriculum includes: extended vocabulary (hobbies, food, clothing, weather), past tense (regular/irregular), future tense, modal verbs, comparative/superlative adjectives, present perfect, conditionals, adverbs of frequency, compound sentences, and basic phrasal verbs.`,
+    level2: `Level 2 (8th-9th Grade) curriculum includes: academic vocabulary, past perfect, passive voice, reported speech, second/third conditionals, gerunds/infinitives, advanced phrasal verbs, complex sentence structures, opinion expressions, and cause/effect language.`,
+    upper: `Upper Level (High School & Adults) curriculum includes: sophisticated vocabulary, subjunctive mood, complex sentence structures, formal/informal register, debate skills, literary analysis, professional communication, cultural awareness, advanced grammar, and research/presentation skills.`
+  };
+
   const prompt = `
-    You are an expert ESL curriculum designer for Brazilian students preparing for the OBLI (Olimpíada Brasileira de Língua Inglesa).
-    Your task is to create a personalized, engaging, and structured learning plan.
+    You are an expert ESL curriculum designer and OBLI competition specialist creating a personalized learning plan for a Brazilian student.
 
-    Student's Competition Level: ${gradeLabel}
-    Student's Goal: "${studentNeeds}"
+    STUDENT PROFILE:
+    - Competition Level: ${gradeLabel}
+    - Learning Goal: "${studentNeeds}"
 
-    Based on this, generate a complete learning plan with 3 to 5 modules. Each module should contain 3 to 5 lessons.
-    The content must be tailored to the student's level. For junior levels, use very simple language and concepts. For upper levels, you can be more complex.
-    The plan should be structured, practical, and directly help the student achieve their goal for the competition.
-    Ensure all fields in the JSON schema are populated with high-quality, relevant content.
-    The goal in the output JSON should be a refined, single-sentence version of the student's stated goal.
+    CURRICULUM CONTEXT for ${gradeLabel}:
+    ${curriculumContext[gradeLevel] || curriculumContext.junior}
+
+    OBLI COMPETITION FOCUS:
+    The OBLI (Olimpíada Brasileira de Língua Inglesa) emphasizes:
+    - Practical communication skills over theoretical knowledge
+    - Real-world application of grammar and vocabulary
+    - Cultural awareness and global communication
+    - Critical thinking and problem-solving in English
+    - Creative expression and original thinking
+
+    TASK: Create a comprehensive learning plan that:
+    1. Aligns with the ${gradeLabel} curriculum standards
+    2. Directly addresses the student's specific goal: "${studentNeeds}"
+    3. Prepares them for OBLI competition success
+    4. Includes 3-5 modules, each with 3-5 practical lessons
+    5. Uses age-appropriate language and concepts
+    6. Focuses on practical application and real-world usage
+    7. Incorporates Brazilian cultural context when relevant
+
+    Each lesson should include:
+    - Clear, practical learning objectives
+    - Simple explanations appropriate for the grade level
+    - Real-world examples and applications
+    - Practice activities that build OBLI competition skills
+    - Key vocabulary with IPA pronunciation guides
+
+    Generate a complete learning plan that bridges the student's current level with their competition goals.
   `;
 
   try {
@@ -117,16 +149,43 @@ export const generateLearningPlan = async (studentNeeds: string, gradeLevel: str
 
 export const suggestGoal = async (gradeLevel: string): Promise<string> => {
     const gradeLabel = gradeLevelMap[gradeLevel] || 'default level';
+    
+    // Curriculum knowledge for each level
+    const curriculumContext: { [key: string]: string } = {
+      junior: `Junior Level (4th-5th Grade) focuses on: basic vocabulary (family, school, colors, numbers), present tense verbs, simple sentence structure, question words, basic adjectives, simple prepositions, personal information, present continuous, and basic plurals.`,
+      level1: `Level 1 (6th-7th Grade) focuses on: extended vocabulary (hobbies, food, clothing, weather), past tense (regular/irregular), future tense, modal verbs, comparative/superlative adjectives, present perfect, conditionals, adverbs of frequency, compound sentences, and basic phrasal verbs.`,
+      level2: `Level 2 (8th-9th Grade) focuses on: academic vocabulary, past perfect, passive voice, reported speech, second/third conditionals, gerunds/infinitives, advanced phrasal verbs, complex sentence structures, opinion expressions, and cause/effect language.`,
+      upper: `Upper Level (High School & Adults) focuses on: sophisticated vocabulary, subjunctive mood, complex sentence structures, formal/informal register, debate skills, literary analysis, professional communication, cultural awareness, advanced grammar, and research/presentation skills.`
+    };
+
     const prompt = `
-      You are an encouraging ESL teacher helping a student in Brazil prepare for the OBLI competition.
-      The student is at the "${gradeLabel}" level and needs a suggestion for a learning goal.
-      Provide one, specific, and inspiring learning goal as a single sentence. Do not add any preamble or explanation.
-      The goal should be something a student could type into a text box.
-
-      Example for Junior: "Learn how to describe my family and hobbies using new vocabulary."
-      Example for Upper/Free: "Improve my ability to debate complex topics like technology and the environment."
-
-      Generate a goal for the "${gradeLabel}" level.
+      You are an expert ESL curriculum designer and OBLI competition specialist helping a Brazilian student.
+      
+      CURRICULUM CONTEXT for ${gradeLabel}:
+      ${curriculumContext[gradeLevel] || curriculumContext.junior}
+      
+      OBLI COMPETITION REQUIREMENTS:
+      The OBLI (Olimpíada Brasileira de Língua Inglesa) competition tests practical English skills including:
+      - Reading comprehension and interpretation
+      - Grammar and vocabulary in context
+      - Cultural awareness and real-world communication
+      - Critical thinking and problem-solving in English
+      - Creative writing and expression
+      
+      TASK: Create a specific, practical, and inspiring learning goal that:
+      1. Aligns with the ${gradeLabel} curriculum focus areas
+      2. Prepares the student for OBLI competition success
+      3. Is achievable and motivating for a Brazilian student
+      4. Can be typed into a text box by the student
+      5. Focuses on practical application, not just theory
+      
+      Provide ONLY the goal sentence. No explanations or additional text.
+      
+      Examples:
+      - Junior: "Master describing my daily routine and family activities using present tense and basic vocabulary for OBLI speaking tasks."
+      - Level 1: "Develop confidence in telling stories about past experiences using irregular verbs and time expressions for OBLI narrative tasks."
+      - Level 2: "Improve my ability to express opinions and debate current events using conditionals and advanced vocabulary for OBLI discussion rounds."
+      - Upper: "Enhance my critical analysis skills to discuss literature and complex topics using sophisticated language structures for OBLI advanced rounds."
     `;
 
     try {

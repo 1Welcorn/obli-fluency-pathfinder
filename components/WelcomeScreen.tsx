@@ -5,6 +5,7 @@ import { LightBulbIcon } from './icons/LightBulbIcon';
 import { BeakerIcon } from './icons/BeakerIcon';
 import { DecorativeBlobs } from './DecorativeBlobs';
 import PlacementTestModal from './PlacementTestModal';
+import CurriculumOverviewModal from './CurriculumOverviewModal';
 
 interface WelcomeScreenProps {
   onStart: (studentNeeds: string, gradeLevel: string) => void;
@@ -24,6 +25,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isPlacementTestOpen, setIsPlacementTestOpen] = useState(false);
+  const [isCurriculumOverviewOpen, setIsCurriculumOverviewOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,10 +34,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
     }
   };
 
-  const handleSuggestGoal = async () => {
+  const handleSuggestGoal = () => {
     if (!grade) return;
+    setIsCurriculumOverviewOpen(true);
+  };
+
+  const handleCurriculumOverviewContinue = async () => {
+    setIsCurriculumOverviewOpen(false);
     setIsSuggestionLoading(true);
     setSuggestionError(null);
+    
     try {
         const goal = await suggestGoal(grade);
         setNeeds(goal);
@@ -152,6 +160,15 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
           isOpen={isPlacementTestOpen}
           onClose={() => setIsPlacementTestOpen(false)}
           onComplete={handlePlacementTestComplete}
+          isPortugueseHelpVisible={isPortugueseHelpVisible}
+        />
+        
+        {/* Curriculum Overview Modal */}
+        <CurriculumOverviewModal
+          isOpen={isCurriculumOverviewOpen}
+          onClose={() => setIsCurriculumOverviewOpen(false)}
+          onContinue={handleCurriculumOverviewContinue}
+          gradeLevel={grade}
           isPortugueseHelpVisible={isPortugueseHelpVisible}
         />
     </div>
