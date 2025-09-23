@@ -5,7 +5,7 @@ import { BookOpenIcon } from './icons/BookOpenIcon';
 interface CurriculumOverviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onContinue: () => void;
+  onContinue: (selectedAreas: string[]) => void;
   gradeLevel: string;
   isPortugueseHelpVisible: boolean;
 }
@@ -91,12 +91,12 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
   gradeLevel,
   isPortugueseHelpVisible
 }) => {
-  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
 
-  // Reset confirmation when modal opens
+  // Reset selection when modal opens
   React.useEffect(() => {
     if (isOpen) {
-      setIsConfirmed(false);
+      setSelectedAreas([]);
     }
   }, [isOpen]);
 
@@ -104,11 +104,21 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
 
   const curriculum = curriculumData[gradeLevel];
 
+  const handleAreaToggle = (area: string) => {
+    setSelectedAreas(prev => 
+      prev.includes(area) 
+        ? prev.filter(a => a !== area)
+        : [...prev, area]
+    );
+  };
+
   const handleContinue = () => {
-    if (isConfirmed) {
-      onContinue();
+    if (selectedAreas.length > 0) {
+      onContinue(selectedAreas);
     }
   };
+
+  const isMinimumSelected = selectedAreas.length >= 2;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -137,102 +147,112 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
           {isPortugueseHelpVisible && (
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800 font-medium">
-                📚 <strong>Visão Geral do Currículo:</strong> Conheça os pontos-chave que serão abordados no seu nível de estudo.
+                📚 <strong>Selecione as Áreas de Foco:</strong> Escolha pelo menos 2 áreas que mais te interessam para criar seu plano personalizado.
               </p>
             </div>
           )}
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-slate-800 mb-4">
-                Key Learning Areas
-                {isPortugueseHelpVisible && (
-                  <span className="block text-sm font-normal text-slate-500 italic">
-                    Áreas Principais de Aprendizagem
-                  </span>
-                )}
-              </h4>
-              
-              <div className="space-y-3">
-                {curriculum.keyPoints.slice(0, Math.ceil(curriculum.keyPoints.length / 2)).map((point, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center mt-0.5">
-                      <span className="text-xs font-semibold text-indigo-600">{index + 1}</span>
-                    </div>
-                    <p className="text-slate-700 text-sm leading-relaxed">{point}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <h4 className="text-lg font-semibold text-indigo-800 mb-2">
+              🎯 Select Your Focus Areas
+              {isPortugueseHelpVisible && (
+                <span className="block text-sm font-normal text-indigo-600 italic">
+                  Selecione suas Áreas de Foco
+                </span>
+              )}
+            </h4>
+            <p className="text-indigo-700 text-sm mb-3">
+              Choose at least 2 areas that interest you most. Our AI will create a personalized learning plan focused on these areas.
+            </p>
+            <p className="text-indigo-600 text-xs">
+              Selected: {selectedAreas.length} areas {selectedAreas.length >= 2 ? '✅' : '⚠️ (minimum 2 required)'}
+            </p>
+          </div>
 
-            <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-slate-800 mb-4">
-                Additional Focus Areas
-                {isPortugueseHelpVisible && (
-                  <span className="block text-sm font-normal text-slate-500 italic">
-                    Áreas Adicionais de Foco
-                  </span>
-                )}
-              </h4>
-              
-              <div className="space-y-3">
-                {curriculum.keyPoints.slice(Math.ceil(curriculum.keyPoints.length / 2)).map((point, index) => (
-                  <div key={index + Math.ceil(curriculum.keyPoints.length / 2)} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center mt-0.5">
-                      <span className="text-xs font-semibold text-indigo-600">{index + Math.ceil(curriculum.keyPoints.length / 2) + 1}</span>
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-slate-800 mb-4">
+              Curriculum Areas - Click to Select
+              {isPortugueseHelpVisible && (
+                <span className="block text-sm font-normal text-slate-500 italic">
+                  Áreas do Currículo - Clique para Selecionar
+                </span>
+              )}
+            </h4>
+            
+            <div className="grid md:grid-cols-2 gap-4">
+              {curriculum.keyPoints.map((point, index) => {
+                const isSelected = selectedAreas.includes(point);
+                return (
+                  <div
+                    key={index}
+                    onClick={() => handleAreaToggle(point)}
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                      isSelected
+                        ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                        : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 ${
+                        isSelected ? 'bg-indigo-500' : 'bg-slate-200'
+                      }`}>
+                        {isSelected ? (
+                          <span className="text-white text-xs font-bold">✓</span>
+                        ) : (
+                          <span className="text-slate-500 text-xs font-semibold">{index + 1}</span>
+                        )}
+                      </div>
+                      <p className={`text-sm leading-relaxed ${
+                        isSelected ? 'text-indigo-800 font-medium' : 'text-slate-700'
+                      }`}>
+                        {point}
+                      </p>
                     </div>
-                    <p className="text-slate-700 text-sm leading-relaxed">{point}</p>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
 
-          <div className="mt-8 p-6 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200">
-            <h4 className="text-lg font-semibold text-indigo-800 mb-3">
-              🎯 How Your Personalized Plan Will Work
+          <div className="mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+            <h4 className="text-lg font-semibold text-green-800 mb-3">
+              🚀 Your Personalized Plan Creation
             </h4>
-            <p className="text-indigo-700 text-sm leading-relaxed mb-4">
-              Based on these curriculum points and your specific needs, our AI will create a tailored learning plan that:
+            <p className="text-green-700 text-sm leading-relaxed mb-4">
+              Based on your selected focus areas, our AI will create a tailored learning plan that:
             </p>
-            <ul className="text-indigo-700 text-sm space-y-2">
+            <ul className="text-green-700 text-sm space-y-2">
+              <li>• <strong>Focuses</strong> on your selected curriculum areas</li>
               <li>• <strong>Prioritizes</strong> the most relevant skills for your goals</li>
               <li>• <strong>Sequences</strong> learning in the optimal order</li>
               <li>• <strong>Adapts</strong> to your current level and learning style</li>
               <li>• <strong>Includes</strong> practical exercises and real-world applications</li>
             </ul>
             {isPortugueseHelpVisible && (
-              <p className="text-xs text-indigo-600 italic mt-3">
-                Como Seu Plano Personalizado Funcionará: Com base nestes pontos do currículo e suas necessidades específicas, nossa IA criará um plano de aprendizado sob medida.
+              <p className="text-xs text-green-600 italic mt-3">
+                Criação do Seu Plano Personalizado: Com base nas suas áreas de foco selecionadas, nossa IA criará um plano de aprendizado sob medida.
               </p>
             )}
           </div>
 
-          {/* Confirmation Checkbox */}
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                id="confirm-planning"
-                checked={isConfirmed}
-                onChange={(e) => setIsConfirmed(e.target.checked)}
-                className="mt-1 w-5 h-5 text-green-600 bg-white border-green-300 rounded focus:ring-green-500 focus:ring-2"
-              />
-              <div className="flex-1">
-                <label htmlFor="confirm-planning" className="text-green-800 font-medium cursor-pointer">
-                  ✅ I understand the curriculum and want AI to create my personalized learning plan
-                </label>
-                <p className="text-green-700 text-sm mt-1">
-                  By checking this box, you confirm that you've reviewed the curriculum overview above and want our AI to create a tailored learning plan based on your specific needs and this curriculum knowledge.
-                </p>
-                {isPortugueseHelpVisible && (
-                  <p className="text-xs text-green-600 italic mt-2">
-                    Eu entendo o currículo e quero que a IA crie meu plano de aprendizado personalizado
-                  </p>
-                )}
+          {/* Selection Summary */}
+          {selectedAreas.length > 0 && (
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h5 className="text-blue-800 font-semibold mb-2">
+                📋 Your Selected Focus Areas:
+              </h5>
+              <div className="flex flex-wrap gap-2">
+                {selectedAreas.map((area, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full border border-blue-300"
+                  >
+                    {area}
+                  </span>
+                ))}
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="flex justify-between items-center p-6 border-t border-slate-200 bg-slate-50">
@@ -244,14 +264,17 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
           </button>
           <button
             onClick={handleContinue}
-            disabled={!isConfirmed}
+            disabled={!isMinimumSelected}
             className={`px-8 py-3 font-semibold rounded-lg transition-colors shadow-lg ${
-              isConfirmed 
+              isMinimumSelected 
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
                 : 'bg-slate-300 text-slate-500 cursor-not-allowed'
             }`}
           >
-            {isConfirmed ? 'Create My Personalized Plan' : 'Please Confirm Above'}
+            {isMinimumSelected 
+              ? `Create Plan with ${selectedAreas.length} Focus Areas` 
+              : 'Select at Least 2 Areas to Continue'
+            }
           </button>
         </div>
       </div>

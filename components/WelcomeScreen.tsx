@@ -39,13 +39,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
     setIsCurriculumOverviewOpen(true);
   };
 
-  const handleCurriculumOverviewContinue = async () => {
+  const handleCurriculumOverviewContinue = async (selectedAreas: string[]) => {
     setIsCurriculumOverviewOpen(false);
     setIsSuggestionLoading(true);
     setSuggestionError(null);
     
     try {
-        const goal = await suggestGoal(grade);
+        const goal = await suggestGoal(grade, selectedAreas);
         setNeeds(goal);
     } catch (err) {
         console.error('Error suggesting goal:', err);

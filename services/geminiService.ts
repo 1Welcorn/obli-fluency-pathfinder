@@ -147,7 +147,7 @@ export const generateLearningPlan = async (studentNeeds: string, gradeLevel: str
 };
 
 
-export const suggestGoal = async (gradeLevel: string): Promise<string> => {
+export const suggestGoal = async (gradeLevel: string, selectedAreas?: string[]): Promise<string> => {
     const gradeLabel = gradeLevelMap[gradeLevel] || 'default level';
     
     // Curriculum knowledge for each level
@@ -158,11 +158,17 @@ export const suggestGoal = async (gradeLevel: string): Promise<string> => {
       upper: `Upper Level (High School & Adults) focuses on: sophisticated vocabulary, subjunctive mood, complex sentence structures, formal/informal register, debate skills, literary analysis, professional communication, cultural awareness, advanced grammar, and research/presentation skills.`
     };
 
+    // Build selected areas context
+    const selectedAreasText = selectedAreas && selectedAreas.length > 0 
+      ? `\n\nSTUDENT'S SELECTED FOCUS AREAS:\nThe student has specifically chosen these curriculum areas they want to focus on:\n${selectedAreas.map((area, index) => `${index + 1}. ${area}`).join('\n')}\n\nYour goal should prioritize these selected areas while maintaining curriculum coherence.`
+      : '';
+
     const prompt = `
       You are an expert ESL curriculum designer and OBLI competition specialist helping a Brazilian student.
       
       CURRICULUM CONTEXT for ${gradeLabel}:
       ${curriculumContext[gradeLevel] || curriculumContext.junior}
+      ${selectedAreasText}
       
       OBLI COMPETITION REQUIREMENTS:
       The OBLI (Olimpíada Brasileira de Língua Inglesa) competition tests practical English skills including:
@@ -174,10 +180,11 @@ export const suggestGoal = async (gradeLevel: string): Promise<string> => {
       
       TASK: Create a specific, practical, and inspiring learning goal that:
       1. Aligns with the ${gradeLabel} curriculum focus areas
-      2. Prepares the student for OBLI competition success
-      3. Is achievable and motivating for a Brazilian student
-      4. Can be typed into a text box by the student
-      5. Focuses on practical application, not just theory
+      2. ${selectedAreas && selectedAreas.length > 0 ? 'PRIORITIZES the student\'s selected focus areas' : 'Covers key curriculum areas'}
+      3. Prepares the student for OBLI competition success
+      4. Is achievable and motivating for a Brazilian student
+      5. Can be typed into a text box by the student
+      6. Focuses on practical application, not just theory
       
       Provide ONLY the goal sentence. No explanations or additional text.
       
