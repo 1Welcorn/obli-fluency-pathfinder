@@ -288,6 +288,7 @@ const App: React.FC = () => {
                     onViewNotes={() => setView('notes_view')}
                     onViewChallenges={() => setView('challenge_arena')}
                     onViewStudyMaterials={() => setView('study_materials_view')}
+                    onViewProgress={() => setView('progress_dashboard')}
                     isPortugueseHelpVisible={isPortugueseHelpVisible}
                 />;
             case 'module_view':
