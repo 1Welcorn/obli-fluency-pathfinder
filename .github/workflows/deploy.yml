@@ -1,6 +1,6 @@
 name: Deploy to GitHub Pages
 
-# Updated workflow to fix package-lock.json issue
+# Updated workflow to fix package-lock.json issue - v2
 on:
   push:
     branches: [ main ]
