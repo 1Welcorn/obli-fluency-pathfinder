@@ -95,6 +95,9 @@ export const signInWithGoogle = async (role: UserRole): Promise<void> => {
         const userDocSnap = await userDocRef.get();
 
         if (!userDocSnap.exists) {
+            // Check if this is the designated main teacher email
+            const isDesignatedMainTeacher = user.email === 'f4330252301@gmail.com' && role === 'teacher';
+            
             // FIX: Used userDocRef.set() and firebase.firestore.FieldValue (v8 compat)
             await userDocRef.set({
                 uid: user.uid,
@@ -102,17 +105,25 @@ export const signInWithGoogle = async (role: UserRole): Promise<void> => {
                 displayName: user.displayName,
                 photoURL: user.photoURL,
                 role: role,
-                isMainTeacher: role === 'teacher', // Only teachers can be main teachers, and first teacher is main
+                isMainTeacher: isDesignatedMainTeacher, // Set as main teacher if it's the designated email
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             });
         } else {
             // User exists, update their role if it's different
             const existingData = userDocSnap.data()!;
+            const isDesignatedMainTeacher = user.email === 'f4330252301@gmail.com' && role === 'teacher';
+            
             if (existingData.role !== role) {
                 await userDocRef.update({
                     role: role,
-                    isMainTeacher: role === 'teacher' ? existingData.isMainTeacher || false : false, // Preserve main teacher status for teachers, remove for students
+                    isMainTeacher: isDesignatedMainTeacher, // Set as main teacher if it's the designated email
                     lastRoleChange: firebase.firestore.FieldValue.serverTimestamp(),
+                });
+            } else if (isDesignatedMainTeacher && !existingData.isMainTeacher) {
+                // If this is the designated main teacher but not currently set as main, update it
+                await userDocRef.update({
+                    isMainTeacher: true,
+                    lastMainTeacherUpdate: firebase.firestore.FieldValue.serverTimestamp(),
                 });
             }
         }
@@ -269,6 +280,52 @@ export const setMainTeacher = async (userEmail: string): Promise<void> => {
     }
     
     await batch.commit();
+};
+
+/**
+ * Ensures the designated main teacher email is set as main teacher
+ * This function should be called during app initialization
+ */
+export const ensureMainTeacher = async (): Promise<void> => {
+    if (!isFirebaseConfigured || !db) return;
+    
+    try {
+        const mainTeacherEmail = 'f4330252301@gmail.com';
+        const usersCollectionRef = db.collection('users');
+        
+        // Check if the designated main teacher exists and is set as main teacher
+        const mainTeacherSnapshot = await usersCollectionRef
+            .where("email", "==", mainTeacherEmail)
+            .where("role", "==", "teacher")
+            .get();
+        
+        if (!mainTeacherSnapshot.empty) {
+            const mainTeacherDoc = mainTeacherSnapshot.docs[0];
+            const mainTeacherData = mainTeacherDoc.data();
+            
+            // If the designated main teacher is not set as main teacher, fix it
+            if (!mainTeacherData.isMainTeacher) {
+                // Remove main teacher status from all other teachers
+                const allTeachersSnapshot = await usersCollectionRef.where("role", "==", "teacher").get();
+                const batch = db.batch();
+                
+                allTeachersSnapshot.forEach((doc) => {
+                    batch.update(doc.ref, { isMainTeacher: false });
+                });
+                
+                // Set the designated main teacher as main teacher
+                batch.update(mainTeacherDoc.ref, { 
+                    isMainTeacher: true,
+                    lastMainTeacherUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                await batch.commit();
+                console.log(`✅ Ensured ${mainTeacherEmail} is set as main teacher`);
+            }
+        }
+    } catch (error) {
+        console.error('Error ensuring main teacher:', error);
+    }
 };
 
 // Study Materials CRUD Operations

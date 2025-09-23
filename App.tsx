@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { User, LearningPlan, Module, Lesson, Student, Collaborator, CollaboratorPermission, StudyMaterial, Challenge, ChallengeSubmission } from './types';
-import { onAuthStateChanged, logout, getLearningPlan, saveLearningPlan, updateLessonInDb, getStudents, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, subscribeToStudyMaterials, addChallenge, submitChallengeAnswer, getUserChallengeStats, getStudentLeaderboard } from './services/firebaseService';
+import { onAuthStateChanged, logout, getLearningPlan, saveLearningPlan, updateLessonInDb, getStudents, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, subscribeToStudyMaterials, addChallenge, submitChallengeAnswer, getUserChallengeStats, getStudentLeaderboard, ensureMainTeacher } from './services/firebaseService';
 import { generateLearningPlan } from './services/geminiService';
 import { isFirebaseConfigured } from './services/firebaseConfig';
 
@@ -72,6 +72,10 @@ const App: React.FC = () => {
 
         const unsubscribe = onAuthStateChanged(async (currentUser) => {
             setUser(currentUser);
+            
+            // Ensure the designated main teacher is set correctly
+            await ensureMainTeacher();
+            
             if (currentUser) {
                 setIsLoading(true);
                 if (currentUser.role === 'student') {

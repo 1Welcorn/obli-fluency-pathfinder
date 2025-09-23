@@ -6,7 +6,6 @@ import { ArrowRightOnRectangleIcon } from './icons/ArrowRightOnRectangleIcon';
 import { LightBulbIcon } from './icons/LightBulbIcon';
 import { DatabaseIcon } from './icons/DatabaseIcon';
 import { CourseRoadmap } from './CourseRoadmap';
-import { setMainTeacher } from '../services/firebaseService';
 
 interface HeaderProps {
     user: User | null;
@@ -18,24 +17,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ user, onLogout, isPortugueseHelpVisible, onTogglePortugueseHelp, onOpenDatabaseInspector, learningPlan }) => {
-    const [isSettingMainTeacher, setIsSettingMainTeacher] = useState(false);
     const [isRoadmapOpen, setIsRoadmapOpen] = useState(false);
     const roleText = user?.role === 'student' ? 'Student View' : 'Teacher View';
     const RoleIcon = user?.role === 'student' ? GraduationCapIcon : UsersIcon;
-
-    const handleSetMainTeacher = async () => {
-        setIsSettingMainTeacher(true);
-        try {
-            // Set the specific email as main teacher
-            await setMainTeacher('f4330252301@gmail.com');
-            alert('f4330252301@gmail.com is now set as the main teacher! Please refresh the page.');
-        } catch (error) {
-            console.error('Error setting main teacher:', error);
-            alert('Error setting main teacher. Please try again.');
-        } finally {
-            setIsSettingMainTeacher(false);
-        }
-    };
 
     return (
         <>
@@ -94,16 +78,11 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, isPortugueseHelpVisible
                                 <DatabaseIcon className="h-5 w-5" />
                             </button>
 
-                            {/* Admin button to set f4330252301@gmail.com as main teacher */}
-                            {user && user.role === 'teacher' && !user.isMainTeacher && (
-                                <button
-                                    onClick={handleSetMainTeacher}
-                                    disabled={isSettingMainTeacher}
-                                    className="px-3 py-2 rounded-md text-sm font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors disabled:opacity-50"
-                                    title="Set f4330252301@gmail.com as main teacher (admin access)"
-                                >
-                                    {isSettingMainTeacher ? 'Setting...' : 'Set Main Teacher'}
-                                </button>
+                            {/* Main teacher status indicator */}
+                            {user && user.role === 'teacher' && user.isMainTeacher && (
+                                <div className="px-3 py-2 rounded-md text-sm font-semibold bg-green-100 text-green-700">
+                                    👑 Main Teacher
+                                </div>
                             )}
                             
                             {user && (
