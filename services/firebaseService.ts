@@ -255,6 +255,95 @@ export const getStudents = async (): Promise<Student[]> => {
 };
 
 /**
+ * Deletes a student from Firebase
+ * This permanently removes the student's user document from Firestore
+ */
+export const deleteStudent = async (studentUid: string): Promise<void> => {
+    if (!isFirebaseConfigured || !db) throw new Error(CONFIG_ERROR_MESSAGE);
+    
+    try {
+        const userDocRef = db.collection('users').doc(studentUid);
+        const userDocSnap = await userDocRef.get();
+        
+        if (!userDocSnap.exists) {
+            throw new Error(`Student with UID ${studentUid} not found`);
+        }
+        
+        const userData = userDocSnap.data()!;
+        if (userData.role !== 'student') {
+            throw new Error(`User ${userData.email} is not a student`);
+        }
+        
+        // Delete the user document from Firestore
+        await userDocRef.delete();
+        console.log(`✅ Successfully deleted student: ${userData.displayName} (${userData.email})`);
+        
+    } catch (error) {
+        console.error('Error deleting student:', error);
+        throw error;
+    }
+};
+
+/**
+ * Checks for and removes duplicate students based on email
+ * This helps prevent the same student from appearing multiple times
+ */
+export const cleanupDuplicateStudents = async (): Promise<void> => {
+    if (!isFirebaseConfigured || !db) return;
+    
+    try {
+        const usersCollectionRef = db.collection('users');
+        const studentsSnapshot = await usersCollectionRef.where("role", "==", "student").get();
+        
+        const emailMap = new Map<string, any[]>();
+        
+        // Group students by email
+        studentsSnapshot.forEach((doc) => {
+            const data = doc.data();
+            const email = data.email;
+            if (email) {
+                if (!emailMap.has(email)) {
+                    emailMap.set(email, []);
+                }
+                emailMap.get(email)!.push({ id: doc.id, data });
+            }
+        });
+        
+        // Find and remove duplicates
+        const batch = db.batch();
+        let duplicatesRemoved = 0;
+        
+        emailMap.forEach((students, email) => {
+            if (students.length > 1) {
+                console.log(`🔍 Found ${students.length} duplicate students for email: ${email}`);
+                
+                // Keep the first one (oldest), remove the rest
+                const toKeep = students[0];
+                const toRemove = students.slice(1);
+                
+                toRemove.forEach((student) => {
+                    batch.delete(db.collection('users').doc(student.id));
+                    duplicatesRemoved++;
+                    console.log(`🗑️ Marking duplicate student for deletion: ${student.data.displayName} (${email})`);
+                });
+                
+                console.log(`✅ Keeping student: ${toKeep.data.displayName} (${email})`);
+            }
+        });
+        
+        if (duplicatesRemoved > 0) {
+            await batch.commit();
+            console.log(`🧹 Cleaned up ${duplicatesRemoved} duplicate students`);
+        } else {
+            console.log(`✅ No duplicate students found`);
+        }
+        
+    } catch (error) {
+        console.error('Error cleaning up duplicate students:', error);
+    }
+};
+
+/**
  * Sets a user as the main teacher (only for initial setup or admin purposes)
  * This should only be called by the system administrator or main teacher
  * FIXED: Added safety checks to prevent data loss

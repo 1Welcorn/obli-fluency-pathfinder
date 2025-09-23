@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { User, LearningPlan, Module, Lesson, Student, Collaborator, CollaboratorPermission, StudyMaterial, Challenge, ChallengeSubmission } from './types';
-import { onAuthStateChanged, logout, getLearningPlan, saveLearningPlan, updateLessonInDb, getStudents, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, subscribeToStudyMaterials, addChallenge, submitChallengeAnswer, getUserChallengeStats, getStudentLeaderboard, ensureMainTeacher } from './services/firebaseService';
+import { onAuthStateChanged, logout, getLearningPlan, saveLearningPlan, updateLessonInDb, getStudents, deleteStudent, cleanupDuplicateStudents, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, subscribeToStudyMaterials, addChallenge, submitChallengeAnswer, getUserChallengeStats, getStudentLeaderboard, ensureMainTeacher } from './services/firebaseService';
 import { generateLearningPlan } from './services/geminiService';
 import { isFirebaseConfigured } from './services/firebaseConfig';
 
@@ -91,6 +91,9 @@ const App: React.FC = () => {
                         setView('welcome');
                     }
                 } else { // Teacher
+                    // Clean up any duplicate students first
+                    await cleanupDuplicateStudents();
+                    
                     const studentList = await getStudents();
                     setStudents(studentList);
                     setView('teacher_dashboard');
@@ -197,17 +200,25 @@ const App: React.FC = () => {
         ));
     };
 
-    const handleDeleteStudent = (student: Student) => {
-        // Remove student from the local state
-        setStudents(prev => prev.filter(s => s.uid !== student.uid));
-        
-        // If the deleted student was selected, clear the selection
-        if (selectedStudent && selectedStudent.uid === student.uid) {
-            setSelectedStudent(null);
+    const handleDeleteStudent = async (student: Student) => {
+        try {
+            // Delete student from Firebase first
+            await deleteStudent(student.uid);
+            
+            // Remove student from the local state
+            setStudents(prev => prev.filter(s => s.uid !== student.uid));
+            
+            // If the deleted student was selected, clear the selection
+            if (selectedStudent && selectedStudent.uid === student.uid) {
+                setSelectedStudent(null);
+            }
+            
+            console.log(`✅ Student ${student.name} successfully deleted from Firebase and local state`);
+            
+        } catch (error) {
+            console.error('Error deleting student:', error);
+            alert(`Failed to delete student ${student.name}. Please try again.`);
         }
-        
-        // TODO: In a real app, you would also delete the student from Firebase here
-        console.log(`Student ${student.name} deleted from local state. Firebase deletion not implemented yet.`);
     };
 
     // Study Materials Handlers
