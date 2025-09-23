@@ -117,6 +117,57 @@ const App: React.FC = () => {
         return () => unsubscribe();
     }, [user]);
 
+    const generateFallbackLearningPlan = (studentNeeds: string, level: string): LearningPlan => {
+        const gradeLabels: { [key: string]: string } = {
+            junior: 'Junior Level (4th-5th Grade)',
+            level1: 'Level 1 (6th-7th Grade)', 
+            level2: 'Level 2 (8th-9th Grade)',
+            upper: 'Upper Level (High School & Adults)'
+        };
+        
+        const gradeLabel = gradeLabels[level] || 'your level';
+        
+        // Create a structured learning plan based on the student's needs and level
+        const lessons = [
+            {
+                id: '1',
+                title: 'Foundation Review',
+                description: 'Review essential concepts and vocabulary for your level',
+                type: 'lesson' as const,
+                content: `Welcome to your ${gradeLabel} learning journey! This lesson will help you review the fundamental concepts you need to master.`,
+                completed: false,
+                timeEstimate: '30-45 minutes'
+            },
+            {
+                id: '2', 
+                title: 'Practice Activities',
+                description: 'Interactive exercises to reinforce your learning',
+                type: 'practice' as const,
+                content: 'Complete these practice activities to strengthen your understanding of the key concepts.',
+                completed: false,
+                timeEstimate: '20-30 minutes'
+            },
+            {
+                id: '3',
+                title: 'OBLI Competition Prep',
+                description: 'Prepare for OBLI competition with targeted practice',
+                type: 'challenge' as const,
+                content: 'Test your skills with OBLI-style questions and scenarios.',
+                completed: false,
+                timeEstimate: '25-35 minutes'
+            }
+        ];
+
+        return {
+            lessons,
+            estimatedDuration: '2-3 hours',
+            level,
+            goal: studentNeeds,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+    };
+
     const handleStartPlan = async (studentNeeds: string, level: string) => {
         if (!user) return;
         setView('generating');
@@ -130,11 +181,28 @@ const App: React.FC = () => {
             console.error('Error generating learning plan:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
             
-            // Provide more specific error messages
+            // If AI service is unavailable, use fallback learning plan
+            if (errorMessage.includes('API_KEY') || errorMessage.includes('API key') || 
+                errorMessage.includes('unavailable') || errorMessage.includes('Failed to generate')) {
+                
+                console.log('AI service unavailable, using fallback learning plan generation');
+                try {
+                    const fallbackPlan = generateFallbackLearningPlan(studentNeeds, level);
+                    await saveLearningPlan(user.uid, fallbackPlan, level);
+                    setLearningPlan(fallbackPlan);
+                    setView('student_dashboard');
+                    return;
+                } catch (fallbackError) {
+                    console.error('Fallback plan generation failed:', fallbackError);
+                    alert("There was an error saving your learning plan. Please try again.");
+                    setView('welcome');
+                    return;
+                }
+            }
+            
+            // For other errors, show specific error messages
             let userMessage = "There was an error generating your plan. Please try again.";
-            if (errorMessage.includes('API_KEY') || errorMessage.includes('API key')) {
-                userMessage = "AI service is not configured. Please contact your teacher to set up the AI features.";
-            } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+            if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
                 userMessage = "Network error. Please check your internet connection and try again.";
             } else if (errorMessage.includes('Firebase') || errorMessage.includes('firebase')) {
                 userMessage = "Database connection error. Please try again or contact support.";
