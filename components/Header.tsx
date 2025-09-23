@@ -70,13 +70,16 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout, isPortugueseHelpVisible
                                 <span className="text-sm font-medium">Portuguese Help</span>
                             </button>
 
-                             <button
-                                onClick={onOpenDatabaseInspector}
-                                className="p-2 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
-                                title="Inspect App State"
-                            >
-                                <DatabaseIcon className="h-5 w-5" />
-                            </button>
+                            {/* Only show Inspect App State button for teachers */}
+                            {user && user.role === 'teacher' && (
+                                <button
+                                    onClick={onOpenDatabaseInspector}
+                                    className="p-2 rounded-md bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                                    title="Inspect App State"
+                                >
+                                    <DatabaseIcon className="h-5 w-5" />
+                                </button>
+                            )}
 
                             {/* Main teacher status indicator */}
                             {user && user.role === 'teacher' && user.isMainTeacher && (
