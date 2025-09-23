@@ -242,7 +242,7 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
         <div className="flex justify-between items-center p-6 border-b border-slate-200">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-indigo-100 rounded-lg">
@@ -263,7 +263,7 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div className="flex-1 p-6 overflow-y-auto">
           {isPortugueseHelpVisible && (
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800 font-medium">
@@ -389,27 +389,48 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-6 border-t border-slate-200 bg-slate-50">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 text-slate-600 font-medium hover:text-slate-800 transition-colors order-2 sm:order-1"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleContinue}
-            disabled={!isMinimumSelected}
-            className={`px-6 py-3 font-semibold rounded-lg transition-colors shadow-lg text-center min-w-[280px] order-1 sm:order-2 ${
-              isMinimumSelected 
-                ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
-                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
-            }`}
-          >
-            {isMinimumSelected 
-              ? `Create Plan with ${selectedAreas.length} Focus Areas` 
-              : 'Select at Least 2 Areas to Continue'
-            }
-          </button>
+        <div className="border-t border-slate-200 bg-white p-6">
+          <div className="flex flex-col gap-4 max-w-2xl mx-auto">
+            <div className="text-center">
+              <p className="text-sm text-slate-600 mb-2">
+                {selectedAreas.length > 0 
+                  ? `You have selected ${selectedAreas.length} focus areas`
+                  : 'Select at least 2 focus areas to continue'
+                }
+              </p>
+              {isPortugueseHelpVisible && (
+                <p className="text-xs text-slate-500 italic mb-4">
+                  🇧🇷 {selectedAreas.length > 0 
+                    ? `Você selecionou ${selectedAreas.length} áreas de foco`
+                    : 'Selecione pelo menos 2 áreas de foco para continuar'
+                  }
+                </p>
+              )}
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={onClose}
+                className="px-6 py-3 text-slate-600 font-medium hover:text-slate-800 transition-colors bg-slate-100 hover:bg-slate-200 rounded-lg order-2 sm:order-1"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleContinue}
+                disabled={!isMinimumSelected}
+                className={`flex-1 py-4 px-6 font-bold rounded-lg transition-all duration-200 shadow-lg text-center text-lg order-1 sm:order-2 ${
+                  isMinimumSelected 
+                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-200 hover:shadow-indigo-300' 
+                    : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                }`}
+              >
+                {isMinimumSelected 
+                  ? `🚀 Create My Learning Plan (${selectedAreas.length} areas)` 
+                  : '⚠️ Select at Least 2 Areas to Continue'
+                }
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
