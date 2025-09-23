@@ -4,6 +4,7 @@ import { SparklesIcon } from './icons/SparklesIcon';
 import { LightBulbIcon } from './icons/LightBulbIcon';
 import { BeakerIcon } from './icons/BeakerIcon';
 import { DecorativeBlobs } from './DecorativeBlobs';
+import PlacementTestModal from './PlacementTestModal';
 
 interface WelcomeScreenProps {
   onStart: (studentNeeds: string, gradeLevel: string) => void;
@@ -22,6 +23,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
   const [grade, setGrade] = useState('');
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const [isPlacementTestOpen, setIsPlacementTestOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +54,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
     } finally {
         setIsSuggestionLoading(false);
     }
+  };
+
+  const handlePlacementTestComplete = (recommendedGrade: string) => {
+    setGrade(recommendedGrade);
+    setIsPlacementTestOpen(false);
   };
 
   return (
@@ -115,7 +122,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => alert("The placement test feature is coming soon! For now, try getting a suggestion.")}
+                                    onClick={() => setIsPlacementTestOpen(true)}
                                     className="w-full flex-1 flex items-center justify-center gap-2 bg-white text-slate-700 font-semibold py-2 px-4 rounded-lg border border-slate-300 hover:bg-slate-100 transition-colors duration-200 text-sm shadow hover:shadow-md"
                                 >
                                    <BeakerIcon className="h-5 w-5" />
@@ -139,6 +146,14 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
 
             </div>
         </div>
+        
+        {/* Placement Test Modal */}
+        <PlacementTestModal
+          isOpen={isPlacementTestOpen}
+          onClose={() => setIsPlacementTestOpen(false)}
+          onComplete={handlePlacementTestComplete}
+          isPortugueseHelpVisible={isPortugueseHelpVisible}
+        />
     </div>
   );
 };
