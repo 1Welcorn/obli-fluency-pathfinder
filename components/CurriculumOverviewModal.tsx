@@ -10,69 +10,189 @@ interface CurriculumOverviewModalProps {
   isPortugueseHelpVisible: boolean;
 }
 
-const curriculumData: { [key: string]: { title: string, keyPoints: string[], description: string } } = {
+const curriculumData: { [key: string]: { title: string, keyPoints: { english: string, portuguese: string }[], description: string } } = {
   junior: {
     title: "Junior Level Curriculum (4th - 5th Grade)",
     description: "Foundation building with basic communication skills",
     keyPoints: [
-      "Basic vocabulary (family, school, colors, numbers 1-100)",
-      "Present tense verbs (be, have, go, like, want)",
-      "Simple sentence structure (Subject + Verb + Object)",
-      "Question words (what, where, when, who, why)",
-      "Basic adjectives (big, small, happy, sad, good, bad)",
-      "Simple prepositions (in, on, under, next to)",
-      "Basic time expressions (today, yesterday, tomorrow)",
-      "Personal information (name, age, where you live)",
-      "Simple present continuous (I am eating, she is playing)",
-      "Basic plurals and articles (a, an, the)"
+      {
+        english: "Basic vocabulary (family, school, colors, numbers 1-100)",
+        portuguese: "Vocabulário básico (família, escola, cores, números 1-100)"
+      },
+      {
+        english: "Present tense verbs (be, have, go, like, want)",
+        portuguese: "Verbos no presente (ser, ter, ir, gostar, querer)"
+      },
+      {
+        english: "Simple sentence structure (Subject + Verb + Object)",
+        portuguese: "Estrutura simples de frases (Sujeito + Verbo + Objeto)"
+      },
+      {
+        english: "Question words (what, where, when, who, why)",
+        portuguese: "Palavras interrogativas (o que, onde, quando, quem, por que)"
+      },
+      {
+        english: "Basic adjectives (big, small, happy, sad, good, bad)",
+        portuguese: "Adjetivos básicos (grande, pequeno, feliz, triste, bom, ruim)"
+      },
+      {
+        english: "Simple prepositions (in, on, under, next to)",
+        portuguese: "Preposições simples (em, sobre, embaixo, ao lado de)"
+      },
+      {
+        english: "Basic time expressions (today, yesterday, tomorrow)",
+        portuguese: "Expressões de tempo básicas (hoje, ontem, amanhã)"
+      },
+      {
+        english: "Personal information (name, age, where you live)",
+        portuguese: "Informações pessoais (nome, idade, onde você mora)"
+      },
+      {
+        english: "Simple present continuous (I am eating, she is playing)",
+        portuguese: "Presente contínuo simples (eu estou comendo, ela está brincando)"
+      },
+      {
+        english: "Basic plurals and articles (a, an, the)",
+        portuguese: "Plurais e artigos básicos (um, uma, o, a)"
+      }
     ]
   },
   level1: {
     title: "Level 1 Curriculum (6th - 7th Grade)",
     description: "Expanding communication with past and future tenses",
     keyPoints: [
-      "Extended vocabulary (hobbies, food, clothing, weather)",
-      "Past tense (regular and irregular verbs)",
-      "Future tense with 'will' and 'going to'",
-      "Modal verbs (can, could, should, must, may)",
-      "Comparative and superlative adjectives",
-      "Present perfect tense (have/has + past participle)",
-      "Conditional sentences (if + present, will + base)",
-      "Adverbs of frequency (always, usually, sometimes, never)",
-      "Compound sentences with 'and', 'but', 'or'",
-      "Basic phrasal verbs (get up, turn on, look for)"
+      {
+        english: "Extended vocabulary (hobbies, food, clothing, weather)",
+        portuguese: "Vocabulário estendido (hobbies, comida, roupas, clima)"
+      },
+      {
+        english: "Past tense (regular and irregular verbs)",
+        portuguese: "Passado (verbos regulares e irregulares)"
+      },
+      {
+        english: "Future tense with 'will' and 'going to'",
+        portuguese: "Futuro com 'will' e 'going to'"
+      },
+      {
+        english: "Modal verbs (can, could, should, must, may)",
+        portuguese: "Verbos modais (pode, poderia, deveria, deve, pode)"
+      },
+      {
+        english: "Comparative and superlative adjectives",
+        portuguese: "Adjetivos comparativos e superlativos"
+      },
+      {
+        english: "Present perfect tense (have/has + past participle)",
+        portuguese: "Presente perfeito (have/has + particípio passado)"
+      },
+      {
+        english: "Conditional sentences (if + present, will + base)",
+        portuguese: "Frases condicionais (se + presente, will + base)"
+      },
+      {
+        english: "Adverbs of frequency (always, usually, sometimes, never)",
+        portuguese: "Advérbios de frequência (sempre, geralmente, às vezes, nunca)"
+      },
+      {
+        english: "Compound sentences with 'and', 'but', 'or'",
+        portuguese: "Frases compostas com 'e', 'mas', 'ou'"
+      },
+      {
+        english: "Basic phrasal verbs (get up, turn on, look for)",
+        portuguese: "Phrasal verbs básicos (levantar, ligar, procurar)"
+      }
     ]
   },
   level2: {
     title: "Level 2 Curriculum (8th - 9th Grade)",
     description: "Advanced grammar and complex communication",
     keyPoints: [
-      "Academic vocabulary and formal language",
-      "Past perfect tense (had + past participle)",
-      "Passive voice (is/was + past participle)",
-      "Reported speech (he said that...)",
-      "Second and third conditionals",
-      "Gerunds and infinitives",
-      "Advanced phrasal verbs and idioms",
-      "Complex sentence structures",
-      "Opinion expressions (I believe, in my opinion)",
-      "Cause and effect language (because, therefore, as a result)"
+      {
+        english: "Academic vocabulary and formal language",
+        portuguese: "Vocabulário acadêmico e linguagem formal"
+      },
+      {
+        english: "Past perfect tense (had + past participle)",
+        portuguese: "Mais-que-perfeito (had + particípio passado)"
+      },
+      {
+        english: "Passive voice (is/was + past participle)",
+        portuguese: "Voz passiva (is/was + particípio passado)"
+      },
+      {
+        english: "Reported speech (he said that...)",
+        portuguese: "Discurso indireto (ele disse que...)"
+      },
+      {
+        english: "Second and third conditionals",
+        portuguese: "Segunda e terceira condicionais"
+      },
+      {
+        english: "Gerunds and infinitives",
+        portuguese: "Gerúndios e infinitivos"
+      },
+      {
+        english: "Advanced phrasal verbs and idioms",
+        portuguese: "Phrasal verbs e expressões idiomáticas avançadas"
+      },
+      {
+        english: "Complex sentence structures",
+        portuguese: "Estruturas complexas de frases"
+      },
+      {
+        english: "Opinion expressions (I believe, in my opinion)",
+        portuguese: "Expressões de opinião (eu acredito, na minha opinião)"
+      },
+      {
+        english: "Cause and effect language (because, therefore, as a result)",
+        portuguese: "Linguagem de causa e efeito (porque, portanto, como resultado)"
+      }
     ]
   },
   upper: {
     title: "Upper Level Curriculum (High School & Adults)",
     description: "Mastery of complex language and critical thinking",
     keyPoints: [
-      "Sophisticated vocabulary and academic language",
-      "Subjunctive mood and advanced conditionals",
-      "Complex sentence structures and clauses",
-      "Formal and informal register differences",
-      "Debate and argumentation skills",
-      "Literary analysis and critical thinking",
-      "Professional communication skills",
-      "Cultural awareness and idiomatic expressions",
-      "Advanced grammar structures (inversions, cleft sentences)",
-      "Research and presentation skills"
+      {
+        english: "Sophisticated vocabulary and academic language",
+        portuguese: "Vocabulário sofisticado e linguagem acadêmica"
+      },
+      {
+        english: "Subjunctive mood and advanced conditionals",
+        portuguese: "Modo subjuntivo e condicionais avançadas"
+      },
+      {
+        english: "Complex sentence structures and clauses",
+        portuguese: "Estruturas complexas de frases e orações"
+      },
+      {
+        english: "Formal and informal register differences",
+        portuguese: "Diferenças entre registro formal e informal"
+      },
+      {
+        english: "Debate and argumentation skills",
+        portuguese: "Habilidades de debate e argumentação"
+      },
+      {
+        english: "Literary analysis and critical thinking",
+        portuguese: "Análise literária e pensamento crítico"
+      },
+      {
+        english: "Professional communication skills",
+        portuguese: "Habilidades de comunicação profissional"
+      },
+      {
+        english: "Cultural awareness and idiomatic expressions",
+        portuguese: "Consciência cultural e expressões idiomáticas"
+      },
+      {
+        english: "Advanced grammar structures (inversions, cleft sentences)",
+        portuguese: "Estruturas gramaticais avançadas (inversões, frases clivadas)"
+      },
+      {
+        english: "Research and presentation skills",
+        portuguese: "Habilidades de pesquisa e apresentação"
+      }
     ]
   }
 };
@@ -181,11 +301,11 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
             
             <div className="grid md:grid-cols-2 gap-4">
               {curriculum.keyPoints.map((point, index) => {
-                const isSelected = selectedAreas.includes(point);
+                const isSelected = selectedAreas.includes(point.english);
                 return (
                   <div
                     key={index}
-                    onClick={() => handleAreaToggle(point)}
+                    onClick={() => handleAreaToggle(point.english)}
                     className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                       isSelected
                         ? 'border-indigo-500 bg-indigo-50 shadow-md'
@@ -202,11 +322,20 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
                           <span className="text-slate-500 text-xs font-semibold">{index + 1}</span>
                         )}
                       </div>
-                      <p className={`text-sm leading-relaxed ${
-                        isSelected ? 'text-indigo-800 font-medium' : 'text-slate-700'
-                      }`}>
-                        {point}
-                      </p>
+                      <div className="flex-1">
+                        <p className={`text-sm leading-relaxed ${
+                          isSelected ? 'text-indigo-800 font-medium' : 'text-slate-700'
+                        }`}>
+                          {point.english}
+                        </p>
+                        {isPortugueseHelpVisible && (
+                          <p className={`text-xs mt-1 leading-relaxed ${
+                            isSelected ? 'text-indigo-600' : 'text-slate-500'
+                          }`}>
+                            🇧🇷 {point.portuguese}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -241,15 +370,22 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
               <h5 className="text-blue-800 font-semibold mb-2">
                 📋 Your Selected Focus Areas:
               </h5>
-              <div className="flex flex-wrap gap-2">
-                {selectedAreas.map((area, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full border border-blue-300"
-                  >
-                    {area}
-                  </span>
-                ))}
+              <div className="space-y-2">
+                {selectedAreas.map((area, index) => {
+                  const point = curriculum.keyPoints.find(p => p.english === area);
+                  return (
+                    <div key={index} className="flex flex-wrap gap-2">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full border border-blue-300">
+                        {area}
+                      </span>
+                      {isPortugueseHelpVisible && point && (
+                        <span className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full border border-green-300">
+                          🇧🇷 {point.portuguese}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
