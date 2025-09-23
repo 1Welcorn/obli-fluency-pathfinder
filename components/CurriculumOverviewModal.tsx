@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CloseIcon } from './icons/CloseIcon';
 import { BookOpenIcon } from './icons/BookOpenIcon';
 
@@ -91,9 +91,24 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
   gradeLevel,
   isPortugueseHelpVisible
 }) => {
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  // Reset confirmation when modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setIsConfirmed(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const curriculum = curriculumData[gradeLevel];
+
+  const handleContinue = () => {
+    if (isConfirmed) {
+      onContinue();
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -192,6 +207,32 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
               </p>
             )}
           </div>
+
+          {/* Confirmation Checkbox */}
+          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="confirm-planning"
+                checked={isConfirmed}
+                onChange={(e) => setIsConfirmed(e.target.checked)}
+                className="mt-1 w-5 h-5 text-green-600 bg-white border-green-300 rounded focus:ring-green-500 focus:ring-2"
+              />
+              <div className="flex-1">
+                <label htmlFor="confirm-planning" className="text-green-800 font-medium cursor-pointer">
+                  ✅ I understand the curriculum and want AI to create my personalized learning plan
+                </label>
+                <p className="text-green-700 text-sm mt-1">
+                  By checking this box, you confirm that you've reviewed the curriculum overview above and want our AI to create a tailored learning plan based on your specific needs and this curriculum knowledge.
+                </p>
+                {isPortugueseHelpVisible && (
+                  <p className="text-xs text-green-600 italic mt-2">
+                    Eu entendo o currículo e quero que a IA crie meu plano de aprendizado personalizado
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex justify-between items-center p-6 border-t border-slate-200 bg-slate-50">
@@ -202,10 +243,15 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
             Cancel
           </button>
           <button
-            onClick={onContinue}
-            className="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-lg"
+            onClick={handleContinue}
+            disabled={!isConfirmed}
+            className={`px-8 py-3 font-semibold rounded-lg transition-colors shadow-lg ${
+              isConfirmed 
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
+                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+            }`}
           >
-            Create My Personalized Plan
+            {isConfirmed ? 'Create My Personalized Plan' : 'Please Confirm Above'}
           </button>
         </div>
       </div>
