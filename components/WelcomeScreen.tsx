@@ -20,19 +20,12 @@ const gradeLevels = [
 ];
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelpVisible }) => {
-  const [needs, setNeeds] = useState('');
   const [grade, setGrade] = useState('');
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [isPlacementTestOpen, setIsPlacementTestOpen] = useState(false);
   const [isCurriculumOverviewOpen, setIsCurriculumOverviewOpen] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (needs.trim() && grade) {
-      onStart(needs.trim(), grade);
-    }
-  };
 
   const handleSuggestGoal = () => {
     if (!grade) return;
@@ -46,18 +39,19 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
     
     try {
         const goal = await suggestGoal(grade, selectedAreas);
-        setNeeds(goal);
+        // Automatically proceed to create the plan
+        onStart(goal, grade);
     } catch (err) {
         console.error('Error suggesting goal:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
         
         // Provide more specific error messages based on the error type
         if (errorMessage.includes('API_KEY') || errorMessage.includes('API key')) {
-            setSuggestionError("AI service is not configured. Please contact your teacher to set up the AI features. You can still write your own learning goal below!");
+            setSuggestionError("AI service is not configured. Please contact your teacher to set up the AI features.");
         } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
             setSuggestionError("Network error. Please check your internet connection and try again.");
         } else {
-            setSuggestionError("Sorry, I couldn't come up with a suggestion right now. Please try again or write your own goal.");
+            setSuggestionError("Sorry, I couldn't come up with a suggestion right now. Please try again.");
         }
     } finally {
         setIsSuggestionLoading(false);
@@ -80,18 +74,21 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
                 <p className="text-lg text-slate-600 mb-8">
                     Your journey to English fluency starts here. Let's create your unique learning path!
                 </p>
-                <form onSubmit={handleSubmit} className="w-full text-left space-y-4">
+                <div className="w-full text-left space-y-6">
                     <div>
-                        <label htmlFor="grade-level" className="block text-sm font-medium text-slate-700 mb-1">
-                            First, select your competition level
+                        <label htmlFor="grade-level" className="block text-lg font-medium text-slate-700 mb-2">
+                            Select your competition level
                         </label>
-                         {isPortugueseHelpVisible && <p className="text-xs text-slate-500 italic mb-1">Selecione o nível da sua competição.</p>}
+                        {isPortugueseHelpVisible && (
+                            <p className="text-sm text-slate-500 italic mb-3">
+                                🇧🇷 Selecione o nível da sua competição
+                            </p>
+                        )}
                         <select
                             id="grade-level"
                             value={grade}
                             onChange={(e) => setGrade(e.target.value)}
-                            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 bg-white shadow-sm"
-                            required
+                            className="w-full p-4 text-lg border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white shadow-lg hover:shadow-xl"
                         >
                             <option value="" disabled>Choose your level...</option>
                             {gradeLevels.map(level => (
@@ -99,58 +96,34 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
                             ))}
                         </select>
                     </div>
-                    <div>
-                        <label htmlFor="student-needs" className="block text-sm font-medium text-slate-700 mb-1">
-                            Next, what would you like to practice?
-                        </label>
-                         {isPortugueseHelpVisible && <p className="text-xs text-slate-500 italic mb-1">Descreva o que você quer praticar. Seja específico!</p>}
-                        <textarea
-                            id="student-needs"
-                            value={needs}
-                            onChange={(e) => setNeeds(e.target.value)}
-                            placeholder="e.g., 'Improve my confidence speaking about current events...'"
-                            className="w-full h-28 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow duration-200 resize-none shadow-sm"
-                            required
-                        />
-                    </div>
-                    
+
                     {grade && (
-                        <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 animate-fade-in">
-                            <h3 className="font-semibold text-slate-700 mb-1">Not sure where to start?</h3>
-                            {isPortugueseHelpVisible && <p className="text-xs text-slate-500 italic mb-2">Não tem certeza por onde começar?</p>}
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <button
-                                    type="button"
-                                    onClick={handleSuggestGoal}
-                                    disabled={isSuggestionLoading}
-                                    className="w-full flex-1 flex items-center justify-center gap-2 bg-teal-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-teal-600 disabled:bg-slate-400 transition-all duration-200 text-sm shadow hover:shadow-md"
-                                >
-                                    <LightBulbIcon className="h-5 w-5" />
-                                    {isSuggestionLoading ? 'Thinking...' : 'Suggest a focus for me'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsPlacementTestOpen(true)}
-                                    className="w-full flex-1 flex items-center justify-center gap-2 bg-white text-slate-700 font-semibold py-2 px-4 rounded-lg border border-slate-300 hover:bg-slate-100 transition-colors duration-200 text-sm shadow hover:shadow-md"
-                                >
-                                   <BeakerIcon className="h-5 w-5" />
-                                   Quick Test
-                                </button>
-                            </div>
-                             {suggestionError && <p className="text-red-500 text-sm mt-2">{suggestionError}</p>}
+                        <div className="text-center">
+                            <button
+                                onClick={handleSuggestGoal}
+                                disabled={isSuggestionLoading}
+                                className={`w-full flex items-center justify-center gap-3 font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg ${
+                                    isSuggestionLoading
+                                        ? 'bg-slate-400 text-white cursor-not-allowed'
+                                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                }`}
+                            >
+                                <SparklesIcon className="h-7 w-7" />
+                                {isSuggestionLoading ? 'Creating Your Plan...' : 'Continue to Learning Plan'}
+                            </button>
+                            {isPortugueseHelpVisible && (
+                                <p className="text-sm text-slate-500 italic mt-2">
+                                    🇧🇷 {isSuggestionLoading ? 'Criando Seu Plano...' : 'Continuar para o Plano de Aprendizado'}
+                                </p>
+                            )}
+                            {suggestionError && (
+                                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <p className="text-red-600 text-sm">{suggestionError}</p>
+                                </div>
+                            )}
                         </div>
                     )}
-
-                    <button
-                        type="submit"
-                        disabled={!needs.trim() || !grade}
-                        className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold py-4 px-6 rounded-lg hover:bg-indigo-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                    >
-                        <SparklesIcon className="h-6 w-6" />
-                        Create My Personal Plan
-                    </button>
-                    {isPortugueseHelpVisible && <p className="text-xs text-slate-500 italic text-center -mt-2">Criar Meu Plano Pessoal</p>}
-                </form>
+                </div>
 
             </div>
         </div>
