@@ -66,24 +66,22 @@ const StudyMaterialsView: React.FC<StudyMaterialsViewProps> = ({
         }
     };
 
-    const getLevelLabel = (level?: string) => {
+    const getLevelLabel = (level: string) => {
         switch (level) {
             case 'junior': return 'Junior';
             case 'level1': return 'Level 1';
             case 'level2': return 'Level 2';
             case 'upper': return 'Upper/Free';
-            case 'all': return 'All Levels';
-            default: return 'All Levels';
+            default: return level;
         }
     };
 
-    const getLevelColor = (level?: string) => {
+    const getLevelColor = (level: string) => {
         switch (level) {
             case 'junior': return 'text-green-600 bg-green-100';
             case 'level1': return 'text-blue-600 bg-blue-100';
             case 'level2': return 'text-purple-600 bg-purple-100';
             case 'upper': return 'text-orange-600 bg-orange-100';
-            case 'all': return 'text-gray-600 bg-gray-100';
             default: return 'text-gray-600 bg-gray-100';
         }
     };
@@ -299,9 +297,19 @@ const StudyMaterialsView: React.FC<StudyMaterialsViewProps> = ({
                                                         >
                                                             <DocumentTextIcon className="h-4 w-4" />
                                                         </button>
-                                                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getLevelColor(material.level)}`}>
-                                                            {getLevelLabel(material.level)}
-                                                        </span>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {material.levels && material.levels.length > 0 ? (
+                                                                material.levels.map((level, index) => (
+                                                                    <span key={index} className={`px-2 py-1 text-xs font-semibold rounded-full ${getLevelColor(level)}`}>
+                                                                        {getLevelLabel(level)}
+                                                                    </span>
+                                                                ))
+                                                            ) : (
+                                                                <span className="px-2 py-1 text-xs font-semibold rounded-full text-gray-600 bg-gray-100">
+                                                                    No levels
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         {material.isRequired && (
                                                             <span className="px-2 py-1 bg-red-100 text-red-600 text-xs font-semibold rounded-full">
                                                                 Required
@@ -441,9 +449,19 @@ const StudyMaterialsView: React.FC<StudyMaterialsViewProps> = ({
                                                                 📌 PINNED #{pinnedMaterials.findIndex(pinned => pinned.id === material.id) + 1}
                                                             </span>
                                                         )}
-                                                        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getLevelColor(material.level)}`}>
-                                                            {getLevelLabel(material.level)}
-                                                        </span>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {material.levels && material.levels.length > 0 ? (
+                                                                material.levels.map((level, index) => (
+                                                                    <span key={index} className={`px-3 py-1 text-xs font-semibold rounded-full ${getLevelColor(level)}`}>
+                                                                        {getLevelLabel(level)}
+                                                                    </span>
+                                                                ))
+                                                            ) : (
+                                                                <span className="px-3 py-1 text-xs font-semibold rounded-full text-gray-600 bg-gray-100">
+                                                                    No levels
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         {material.isRequired && (
                                                             <span className="px-3 py-1 bg-red-100 text-red-600 text-xs font-semibold rounded-full">
                                                                 Required

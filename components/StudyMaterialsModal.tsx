@@ -43,7 +43,7 @@ const StudyMaterialsModal: React.FC<StudyMaterialsModalProps> = ({
         points: '',
         isRequired: false,
         tags: '',
-        level: 'all' as 'junior' | 'level1' | 'level2' | 'upper' | 'all'
+        levels: [] as ('junior' | 'level1' | 'level2' | 'upper')[]
     });
 
     if (!isOpen) return null;
@@ -74,26 +74,30 @@ const StudyMaterialsModal: React.FC<StudyMaterialsModalProps> = ({
         }
     };
 
-    const getLevelLabel = (level?: string) => {
+    const getLevelLabel = (level: string) => {
         switch (level) {
             case 'junior': return 'Junior';
             case 'level1': return 'Level 1';
             case 'level2': return 'Level 2';
             case 'upper': return 'Upper/Free';
-            case 'all': return 'All Levels';
-            default: return 'All Levels';
+            default: return level;
         }
     };
 
-    const getLevelColor = (level?: string) => {
+    const getLevelColor = (level: string) => {
         switch (level) {
             case 'junior': return 'text-green-600 bg-green-100';
             case 'level1': return 'text-blue-600 bg-blue-100';
             case 'level2': return 'text-purple-600 bg-purple-100';
             case 'upper': return 'text-orange-600 bg-orange-100';
-            case 'all': return 'text-gray-600 bg-gray-100';
             default: return 'text-gray-600 bg-gray-100';
         }
+    };
+
+    const getLevelsDisplay = (levels: string[]) => {
+        if (levels.length === 0) return 'No levels assigned';
+        if (levels.length === 4) return 'All Levels';
+        return levels.map(getLevelLabel).join(', ');
     };
 
     const resetForm = () => {
@@ -107,7 +111,7 @@ const StudyMaterialsModal: React.FC<StudyMaterialsModalProps> = ({
             points: '',
             isRequired: false,
             tags: '',
-            level: 'all'
+            levels: []
         });
         setIsAdding(false);
         setEditingId(null);
@@ -122,6 +126,12 @@ const StudyMaterialsModal: React.FC<StudyMaterialsModalProps> = ({
         
         if (!formData.description.trim()) {
             alert('Description is required');
+            return false;
+        }
+        
+        // Check that at least one level is selected
+        if (formData.levels.length === 0) {
+            alert('Please select at least one level');
             return false;
         }
         
@@ -158,7 +168,7 @@ const StudyMaterialsModal: React.FC<StudyMaterialsModalProps> = ({
             isRequired: formData.isRequired,
             createdBy: currentUserEmail || 'unknown',
             tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-            level: formData.level
+            levels: formData.levels
         };
 
         // Only add optional fields if they have values
@@ -202,7 +212,7 @@ const StudyMaterialsModal: React.FC<StudyMaterialsModalProps> = ({
             points: material.points?.toString() || '',
             isRequired: material.isRequired,
             tags: material.tags.join(', '),
-            level: material.level || 'all'
+            levels: material.levels || []
         });
         setEditingId(material.id);
         setIsAdding(true);
@@ -266,9 +276,19 @@ const StudyMaterialsModal: React.FC<StudyMaterialsModalProps> = ({
                                                     <span className="text-sm font-medium text-slate-600 capitalize">
                                                         {material.type}
                                                     </span>
-                                                    <span className={`px-2 py-1 text-xs rounded-full ${getLevelColor(material.level)}`}>
-                                                        {getLevelLabel(material.level)}
-                                                    </span>
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {material.levels && material.levels.length > 0 ? (
+                                                            material.levels.map((level, index) => (
+                                                                <span key={index} className={`px-2 py-1 text-xs rounded-full ${getLevelColor(level)}`}>
+                                                                    {getLevelLabel(level)}
+                                                                </span>
+                                                            ))
+                                                        ) : (
+                                                            <span className="px-2 py-1 text-xs rounded-full text-gray-600 bg-gray-100">
+                                                                No levels
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     {material.isRequired && (
                                                         <span className="px-2 py-1 bg-red-100 text-red-600 text-xs rounded-full">
                                                             Required
@@ -384,23 +404,42 @@ const StudyMaterialsModal: React.FC<StudyMaterialsModalProps> = ({
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                                            Target Level *
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                            Target Levels * (Select one or more)
                                         </label>
-                                        <select
-                                            value={formData.level}
-                                            onChange={(e) => setFormData({ ...formData, level: e.target.value as 'junior' | 'level1' | 'level2' | 'upper' | 'all' })}
-                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                        >
-                                            <option value="all">All Levels</option>
-                                            <option value="junior">Junior</option>
-                                            <option value="level1">Level 1</option>
-                                            <option value="level2">Level 2</option>
-                                            <option value="upper">Upper/Free</option>
-                                        </select>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {[
+                                                { value: 'junior', label: 'Junior' },
+                                                { value: 'level1', label: 'Level 1' },
+                                                { value: 'level2', label: 'Level 2' },
+                                                { value: 'upper', label: 'Upper/Free' }
+                                            ].map((level) => (
+                                                <label key={level.value} className="flex items-center space-x-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.levels.includes(level.value as any)}
+                                                        onChange={(e) => {
+                                                            if (e.target.checked) {
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    levels: [...formData.levels, level.value as any]
+                                                                });
+                                                            } else {
+                                                                setFormData({
+                                                                    ...formData,
+                                                                    levels: formData.levels.filter(l => l !== level.value)
+                                                                });
+                                                            }
+                                                        }}
+                                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                                    />
+                                                    <span className="text-sm text-slate-700">{level.label}</span>
+                                                </label>
+                                            ))}
+                                        </div>
                                         {isPortugueseHelpVisible && (
                                             <p className="text-xs text-slate-500 italic mt-1">
-                                                Selecione o nível para o qual este material é destinado
+                                                Selecione um ou mais níveis para os quais este material é destinado
                                             </p>
                                         )}
                                     </div>

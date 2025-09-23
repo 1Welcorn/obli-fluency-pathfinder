@@ -78,7 +78,7 @@ export interface StudyMaterial {
     createdAt: Date;
     createdBy: string;
     tags: string[];
-    level?: 'junior' | 'level1' | 'level2' | 'upper' | 'all';
+    levels: ('junior' | 'level1' | 'level2' | 'upper')[];
 }
 
 export interface MaterialNote {
