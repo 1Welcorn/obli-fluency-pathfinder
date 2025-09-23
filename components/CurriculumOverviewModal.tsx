@@ -275,14 +275,16 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
           <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
             <h4 className="text-lg font-semibold text-indigo-800 mb-2">
               🎯 Select Your Focus Areas
-              {isPortugueseHelpVisible && (
-                <span className="block text-sm font-normal text-indigo-600 italic">
-                  Selecione suas Áreas de Foco
-                </span>
-              )}
+              <span className="block text-sm font-normal text-indigo-600 italic">
+                🇧🇷 Selecione suas Áreas de Foco
+              </span>
             </h4>
             <p className="text-indigo-700 text-sm mb-3">
               Choose at least 2 areas that interest you most. Our AI will create a personalized learning plan focused on these areas.
+              <br />
+              <span className="text-indigo-600 text-xs">
+                🇧🇷 Escolha pelo menos 2 áreas que mais te interessam. Nossa IA criará um plano de aprendizado personalizado focado nessas áreas.
+              </span>
             </p>
             <p className="text-indigo-600 text-xs">
               Selected: {selectedAreas.length} areas {selectedAreas.length >= 2 ? '✅' : '⚠️ (minimum 2 required)'}
@@ -292,11 +294,9 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-slate-800 mb-4">
               Curriculum Areas - Click to Select
-              {isPortugueseHelpVisible && (
-                <span className="block text-sm font-normal text-slate-500 italic">
-                  Áreas do Currículo - Clique para Selecionar
-                </span>
-              )}
+              <span className="block text-sm font-normal text-slate-500 italic">
+                🇧🇷 Áreas do Currículo - Clique para Selecionar
+              </span>
             </h4>
             
             <div className="grid md:grid-cols-2 gap-4">
@@ -328,13 +328,11 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
                         }`}>
                           {point.english}
                         </p>
-                        {isPortugueseHelpVisible && (
-                          <p className={`text-xs mt-1 leading-relaxed ${
-                            isSelected ? 'text-indigo-600' : 'text-slate-500'
-                          }`}>
-                            🇧🇷 {point.portuguese}
-                          </p>
-                        )}
+                        <p className={`text-xs mt-1 leading-relaxed ${
+                          isSelected ? 'text-indigo-600' : 'text-slate-500'
+                        }`}>
+                          🇧🇷 {point.portuguese}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -378,7 +376,7 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
                       <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full border border-blue-300">
                         {area}
                       </span>
-                      {isPortugueseHelpVisible && point && (
+                      {point && (
                         <span className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full border border-green-300">
                           🇧🇷 {point.portuguese}
                         </span>
@@ -391,17 +389,17 @@ const CurriculumOverviewModal: React.FC<CurriculumOverviewModalProps> = ({
           )}
         </div>
 
-        <div className="flex justify-between items-center p-6 border-t border-slate-200 bg-slate-50">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-6 border-t border-slate-200 bg-slate-50">
           <button
             onClick={onClose}
-            className="px-6 py-2 text-slate-600 font-medium hover:text-slate-800 transition-colors"
+            className="px-6 py-2 text-slate-600 font-medium hover:text-slate-800 transition-colors order-2 sm:order-1"
           >
             Cancel
           </button>
           <button
             onClick={handleContinue}
             disabled={!isMinimumSelected}
-            className={`px-8 py-3 font-semibold rounded-lg transition-colors shadow-lg ${
+            className={`px-6 py-3 font-semibold rounded-lg transition-colors shadow-lg text-center min-w-[280px] order-1 sm:order-2 ${
               isMinimumSelected 
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
                 : 'bg-slate-300 text-slate-500 cursor-not-allowed'
