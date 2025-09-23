@@ -284,7 +284,6 @@ const App: React.FC = () => {
                 if (!learningPlan) return <WelcomeScreen onStart={handleStartPlan} isPortugueseHelpVisible={isPortugueseHelpVisible} />;
                 return <Dashboard 
                     plan={learningPlan} 
-                    onSelectModule={module => { setSelectedModule(module); setView('module_view'); }}
                     onViewNotes={() => setView('notes_view')}
                     onViewChallenges={() => setView('challenge_arena')}
                     onViewStudyMaterials={() => setView('study_materials_view')}

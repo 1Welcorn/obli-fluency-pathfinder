@@ -1,16 +1,13 @@
 // [FE-FIX] Implemented the student dashboard to display learning plan progress and navigation.
 import React from 'react';
-import type { LearningPlan, Module } from '../types';
+import type { LearningPlan } from '../types';
 import { CountdownMilestone } from './CountdownMilestone';
 import { BookOpenIcon } from './icons/BookOpenIcon';
 import { DocumentTextIcon } from './icons/DocumentTextIcon';
 import { TrophyIcon } from './icons/TrophyIcon';
-import { ArrowRightIcon } from './icons/ArrowRightIcon';
-import { CheckCircleIcon } from './icons/CheckCircleIcon';
 
 interface DashboardProps {
   plan: LearningPlan;
-  onSelectModule: (module: Module) => void;
   onViewNotes: () => void;
   onViewChallenges: () => void;
   onViewStudyMaterials: () => void;
@@ -18,57 +15,9 @@ interface DashboardProps {
   isPortugueseHelpVisible: boolean;
 }
 
-const ModuleCard: React.FC<{ module: Module; onSelect: () => void; isPortugueseHelpVisible: boolean; }> = ({ module, onSelect, isPortugueseHelpVisible }) => {
-    const totalLessons = module.lessons.length;
-    const completedLessons = module.lessons.filter(l => l.status === 'completed').length;
-    const isModuleComplete = totalLessons > 0 && totalLessons === completedLessons;
-    const progress = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
-
-    return (
-        <div className="group bg-gradient-to-br from-white to-slate-50 p-6 rounded-2xl shadow-lg border border-slate-200 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-indigo-300">
-            <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                    <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-indigo-700 transition-colors">
-                        {module.title}
-                    </h3>
-                    <p className="text-slate-600 text-sm leading-relaxed">{module.description}</p>
-                </div>
-                {isModuleComplete && (
-                    <div className="flex-shrink-0 ml-4 p-2 bg-green-100 rounded-full">
-                        <CheckCircleIcon className="h-6 w-6 text-green-500" />
-                    </div>
-                )}
-            </div>
-            
-            <div className="mb-6">
-                <div className="flex justify-between items-center mb-2 text-sm text-slate-600">
-                    <span className="font-medium">Progress</span>
-                    <span className="font-semibold">{completedLessons} / {totalLessons} lessons</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                    <div 
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-700 ease-out" 
-                        style={{ width: `${progress}%` }}
-                    ></div>
-                </div>
-                <div className="text-right mt-1">
-                    <span className="text-xs font-medium text-slate-500">{Math.round(progress)}% complete</span>
-                </div>
-            </div>
-            
-            <button
-                onClick={onSelect}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-4 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-                {isModuleComplete ? 'Review Module' : 'Start Learning'}
-                <ArrowRightIcon className="h-5 w-5" />
-            </button>
-        </div>
-    );
-};
 
 
-const Dashboard: React.FC<DashboardProps> = ({ plan, onSelectModule, onViewNotes, onViewChallenges, onViewStudyMaterials, onViewProgress, isPortugueseHelpVisible }) => {
+const Dashboard: React.FC<DashboardProps> = ({ plan, onViewNotes, onViewChallenges, onViewStudyMaterials, onViewProgress, isPortugueseHelpVisible }) => {
   return (
     <div className="animate-fade-in max-w-6xl mx-auto">
       {/* Hero Section */}
@@ -168,19 +117,6 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onSelectModule, onViewNotes
         </div>
       </div>
 
-      {/* Learning Plan Overview */}
-      <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-800 mb-2">Learning Plan Overview</h2>
-          <p className="text-slate-600">Your personalized learning modules and progress</p>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {plan.modules.map((module, index) => (
-            <ModuleCard key={index} module={module} onSelect={() => onSelectModule(module)} isPortugueseHelpVisible={isPortugueseHelpVisible} />
-          ))}
-        </div>
-      </div>
     </div>
   );
 };
