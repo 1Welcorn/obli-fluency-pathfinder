@@ -128,43 +128,57 @@ const App: React.FC = () => {
         const gradeLabel = gradeLabels[level] || 'your level';
         
         // Create a structured learning plan based on the student's needs and level
-        const lessons = [
+        const modules: Module[] = [
             {
-                id: '1',
                 title: 'Foundation Review',
                 description: 'Review essential concepts and vocabulary for your level',
-                type: 'lesson' as const,
-                content: `Welcome to your ${gradeLabel} learning journey! This lesson will help you review the fundamental concepts you need to master.`,
-                completed: false,
-                timeEstimate: '30-45 minutes'
+                lessons: [
+                    {
+                        title: 'Basic Concepts Review',
+                        objective: 'Master fundamental concepts for your level',
+                        explanation: `Welcome to your ${gradeLabel} learning journey! This lesson will help you review the fundamental concepts you need to master.`,
+                        example: 'Example: Basic vocabulary and grammar structures',
+                        practice_prompt: 'Practice using the concepts you\'ve learned',
+                        pronunciation_guide: [],
+                        status: 'not_started'
+                    }
+                ]
             },
             {
-                id: '2', 
                 title: 'Practice Activities',
                 description: 'Interactive exercises to reinforce your learning',
-                type: 'practice' as const,
-                content: 'Complete these practice activities to strengthen your understanding of the key concepts.',
-                completed: false,
-                timeEstimate: '20-30 minutes'
+                lessons: [
+                    {
+                        title: 'Interactive Practice',
+                        objective: 'Apply your knowledge through practice exercises',
+                        explanation: 'Complete these practice activities to strengthen your understanding of the key concepts.',
+                        example: 'Example: Fill-in-the-blank exercises and matching activities',
+                        practice_prompt: 'Complete the practice exercises to test your understanding',
+                        pronunciation_guide: [],
+                        status: 'not_started'
+                    }
+                ]
             },
             {
-                id: '3',
                 title: 'OBLI Competition Prep',
                 description: 'Prepare for OBLI competition with targeted practice',
-                type: 'challenge' as const,
-                content: 'Test your skills with OBLI-style questions and scenarios.',
-                completed: false,
-                timeEstimate: '25-35 minutes'
+                lessons: [
+                    {
+                        title: 'Competition Practice',
+                        objective: 'Prepare for OBLI competition success',
+                        explanation: 'Test your skills with OBLI-style questions and scenarios.',
+                        example: 'Example: Competition-style questions and scenarios',
+                        practice_prompt: 'Practice with competition-style questions',
+                        pronunciation_guide: [],
+                        status: 'not_started'
+                    }
+                ]
             }
         ];
 
         return {
-            lessons,
-            estimatedDuration: '2-3 hours',
-            level,
             goal: studentNeeds,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            modules
         };
     };
 
