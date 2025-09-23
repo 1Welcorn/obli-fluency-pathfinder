@@ -47,14 +47,6 @@ const App: React.FC = () => {
     // Teacher-specific State
     const [students, setStudents] = useState<Student[]>([]);
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-    const [collaborators, setCollaborators] = useState<Collaborator[]>([
-        {
-            email: 'teacher.collaborator@example.com',
-            permission: 'viewer',
-            invitedAt: new Date(),
-            invitedBy: 'system'
-        }
-    ]);
 
     // Study Materials State
     const [studyMaterials, setStudyMaterials] = useState<StudyMaterial[]>([]);
@@ -96,6 +88,8 @@ const App: React.FC = () => {
                     
                     const studentList = await getStudents();
                     setStudents(studentList);
+                    
+                    
                     setView('teacher_dashboard');
                 }
                 setIsLoading(false);
@@ -133,8 +127,20 @@ const App: React.FC = () => {
             setLearningPlan(plan);
             setView('student_dashboard');
         } catch (error) {
-            console.error(error);
-            alert("There was an error generating your plan. Please try again.");
+            console.error('Error generating learning plan:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            
+            // Provide more specific error messages
+            let userMessage = "There was an error generating your plan. Please try again.";
+            if (errorMessage.includes('API_KEY') || errorMessage.includes('API key')) {
+                userMessage = "AI service is not configured. Please contact your teacher to set up the AI features.";
+            } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+                userMessage = "Network error. Please check your internet connection and try again.";
+            } else if (errorMessage.includes('Firebase') || errorMessage.includes('firebase')) {
+                userMessage = "Database connection error. Please try again or contact support.";
+            }
+            
+            alert(userMessage);
             setView('welcome');
         }
     };
@@ -180,25 +186,6 @@ const App: React.FC = () => {
         setLearningPlan(null);
     };
 
-    const handleInviteCollaborator = (email: string, permission: CollaboratorPermission) => {
-        const newCollaborator: Collaborator = {
-            email,
-            permission,
-            invitedAt: new Date(),
-            invitedBy: user?.email || 'unknown'
-        };
-        setCollaborators(prev => [...prev, newCollaborator]);
-    };
-
-    const handleRemoveCollaborator = (email: string) => {
-        setCollaborators(prev => prev.filter(c => c.email !== email));
-    };
-
-    const handleUpdateCollaboratorPermission = (email: string, permission: CollaboratorPermission) => {
-        setCollaborators(prev => prev.map(c => 
-            c.email === email ? { ...c, permission } : c
-        ));
-    };
 
     const handleDeleteStudent = async (student: Student) => {
         try {
@@ -345,10 +332,10 @@ const App: React.FC = () => {
                     students={students}
                     onSelectStudent={student => { setSelectedStudent(student); setView('student_progress_view'); }}
                     onDeleteStudent={handleDeleteStudent}
-                    collaborators={collaborators}
-                    onInviteCollaborator={handleInviteCollaborator}
-                    onRemoveCollaborator={handleRemoveCollaborator}
-                    onUpdateCollaboratorPermission={handleUpdateCollaboratorPermission}
+                    collaborators={[]}
+                    onInviteCollaborator={() => {}}
+                    onRemoveCollaborator={() => {}}
+                    onUpdateCollaboratorPermission={() => {}}
                     onOpenStudyMaterials={() => setIsStudyMaterialsModalOpen(true)}
                     onViewProgress={() => setView('teacher_progress_view')}
                     isPortugueseHelpVisible={isPortugueseHelpVisible}
@@ -402,7 +389,7 @@ const App: React.FC = () => {
                 onClose={() => setIsDbInspectorOpen(false)}
                 learningPlan={learningPlan}
                 students={students}
-                collaborators={collaborators.map(c => c.email)}
+                collaborators={[]}
             />
             {user && user.role === 'teacher' && (
                 <StudyMaterialsModal

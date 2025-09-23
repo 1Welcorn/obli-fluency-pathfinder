@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { suggestGoal } from '../services/geminiService';
 import { SparklesIcon } from './icons/SparklesIcon';
-import { GoogleClassroomIcon } from './icons/GoogleClassroomIcon';
 import { LightBulbIcon } from './icons/LightBulbIcon';
 import { BeakerIcon } from './icons/BeakerIcon';
 import { DecorativeBlobs } from './DecorativeBlobs';
@@ -39,7 +38,17 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
         const goal = await suggestGoal(grade);
         setNeeds(goal);
     } catch (err) {
-        setSuggestionError("Sorry, I couldn't come up with a suggestion right now. Please try again or write your own goal.");
+        console.error('Error suggesting goal:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        
+        // Provide more specific error messages based on the error type
+        if (errorMessage.includes('API_KEY') || errorMessage.includes('API key')) {
+            setSuggestionError("AI service is not configured. Please contact your teacher to set up the AI features. You can still write your own learning goal below!");
+        } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+            setSuggestionError("Network error. Please check your internet connection and try again.");
+        } else {
+            setSuggestionError("Sorry, I couldn't come up with a suggestion right now. Please try again or write your own goal.");
+        }
     } finally {
         setIsSuggestionLoading(false);
     }
@@ -128,24 +137,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
                     {isPortugueseHelpVisible && <p className="text-xs text-slate-500 italic text-center -mt-2">Criar Meu Plano Pessoal</p>}
                 </form>
 
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="w-full border-t border-slate-300" />
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="bg-white/80 backdrop-blur-lg px-2 text-sm font-medium text-slate-500">OR</span>
-                  </div>
-                </div>
-
-                <button
-                    type="button"
-                    onClick={() => alert('Google Classroom integration is coming soon!')}
-                    className="w-full flex items-center justify-center gap-3 bg-white text-slate-700 font-semibold py-3 px-6 rounded-lg border border-slate-300 hover:bg-slate-100 transition-colors duration-200 shadow hover:shadow-md"
-                >
-                    <GoogleClassroomIcon className="h-5 w-5 text-[#0F9D58]" />
-                    Connect with Google Classroom
-                </button>
-                 {isPortugueseHelpVisible && <p className="text-xs text-slate-500 italic text-center mt-1">Conectar com o Google Classroom</p>}
             </div>
         </div>
     </div>

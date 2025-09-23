@@ -6,10 +6,11 @@ let ai: GoogleGenAI | null = null;
 
 function getAiInstance(): GoogleGenAI {
   if (!ai) {
-    if (!process.env.API_KEY) {
-      throw new Error("API_KEY environment variable is not set. The application cannot connect to the AI service.");
+    const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'PLACEHOLDER_API_KEY') {
+      throw new Error("GEMINI_API_KEY environment variable is not set or is still a placeholder. Please configure your Gemini API key to use AI features.");
     }
-    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    ai = new GoogleGenAI({ apiKey });
   }
   return ai;
 }
