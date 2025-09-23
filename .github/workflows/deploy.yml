@@ -30,13 +30,6 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
         
-      - name: Debug git status
-        run: |
-          echo "Git status:"
-          git status
-          echo "Git log:"
-          git log --oneline -5
-        
       - name: Build
         run: npm run build
         
