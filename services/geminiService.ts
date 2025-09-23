@@ -142,7 +142,15 @@ export const generateLearningPlan = async (studentNeeds: string, gradeLevel: str
 
   } catch (error) {
     console.error("Error generating learning plan:", error);
-    throw new Error("Failed to generate the learning plan. The AI model might be busy or the service is not configured correctly. Please try again.");
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    if (errorMessage.includes('API_KEY') || errorMessage.includes('API key')) {
+      throw new Error("API_KEY configuration error. Please check your Gemini API key setup.");
+    } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+      throw new Error("Network error. Please check your internet connection.");
+    } else {
+      throw new Error("Failed to generate the learning plan. The AI model might be busy or the service is not configured correctly. Please try again.");
+    }
   }
 };
 
@@ -206,7 +214,15 @@ export const suggestGoal = async (gradeLevel: string, selectedAreas?: string[]):
 
     } catch (error) {
       console.error("Error suggesting goal:", error);
-      throw new Error("Failed to suggest a goal. The AI service may be unavailable.");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      if (errorMessage.includes('API_KEY') || errorMessage.includes('API key')) {
+        throw new Error("API_KEY configuration error. Please check your Gemini API key setup.");
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        throw new Error("Network error. Please check your internet connection.");
+      } else {
+        throw new Error("Failed to suggest a goal. The AI service may be unavailable.");
+      }
     }
 };
 

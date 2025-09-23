@@ -32,6 +32,26 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
     setIsCurriculumOverviewOpen(true);
   };
 
+  const generateFallbackGoal = (grade: string, selectedAreas: string[]): string => {
+    const gradeLabels: { [key: string]: string } = {
+      junior: 'Junior Level (4th-5th Grade)',
+      level1: 'Level 1 (6th-7th Grade)', 
+      level2: 'Level 2 (8th-9th Grade)',
+      upper: 'Upper Level (High School & Adults)'
+    };
+    
+    const gradeLabel = gradeLabels[grade] || 'your level';
+    const areaCount = selectedAreas.length;
+    
+    if (selectedAreas.length >= 3) {
+      return `Master ${selectedAreas.slice(0, 2).join(' and ')} while developing strong skills in ${selectedAreas[2]} for ${gradeLabel} OBLI competition success.`;
+    } else if (selectedAreas.length === 2) {
+      return `Develop proficiency in ${selectedAreas.join(' and ')} to excel in ${gradeLabel} OBLI competition tasks.`;
+    } else {
+      return `Focus on ${selectedAreas[0]} to build a strong foundation for ${gradeLabel} OBLI competition success.`;
+    }
+  };
+
   const handleCurriculumOverviewContinue = async (selectedAreas: string[]) => {
     setIsCurriculumOverviewOpen(false);
     setIsSuggestionLoading(true);
@@ -45,10 +65,18 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart, isPortugueseHelp
         console.error('Error suggesting goal:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
         
-        // Provide more specific error messages based on the error type
-        if (errorMessage.includes('API_KEY') || errorMessage.includes('API key')) {
-            setSuggestionError("AI service is not configured. Please contact your teacher to set up the AI features.");
-        } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        // If AI fails, use fallback goal generation
+        if (errorMessage.includes('API_KEY') || errorMessage.includes('API key') || 
+            errorMessage.includes('unavailable') || errorMessage.includes('Failed to suggest')) {
+            
+            console.log('AI service unavailable, using fallback goal generation');
+            const fallbackGoal = generateFallbackGoal(grade, selectedAreas);
+            onStart(fallbackGoal, grade);
+            return;
+        }
+        
+        // For other errors, show error message
+        if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
             setSuggestionError("Network error. Please check your internet connection and try again.");
         } else {
             setSuggestionError("Sorry, I couldn't come up with a suggestion right now. Please try again.");
