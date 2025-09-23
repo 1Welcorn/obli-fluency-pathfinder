@@ -73,8 +73,10 @@ const App: React.FC = () => {
         const unsubscribe = onAuthStateChanged(async (currentUser) => {
             setUser(currentUser);
             
-            // Ensure the designated main teacher is set correctly
-            await ensureMainTeacher();
+            // Only ensure main teacher status if the current user is the designated main teacher
+            if (currentUser && currentUser.email === 'f4330252301@gmail.com' && currentUser.role === 'teacher') {
+                await ensureMainTeacher();
+            }
             
             if (currentUser) {
                 setIsLoading(true);

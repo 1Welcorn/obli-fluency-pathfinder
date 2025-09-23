@@ -257,34 +257,64 @@ export const getStudents = async (): Promise<Student[]> => {
 /**
  * Sets a user as the main teacher (only for initial setup or admin purposes)
  * This should only be called by the system administrator or main teacher
+ * FIXED: Added safety checks to prevent data loss
  */
 export const setMainTeacher = async (userEmail: string): Promise<void> => {
     if (!isFirebaseConfigured || !db) throw new Error(CONFIG_ERROR_MESSAGE);
     
-    // First, remove main teacher status from all users
-    const usersCollectionRef = db.collection('users');
-    const allUsersSnapshot = await usersCollectionRef.where("role", "==", "teacher").get();
-    
-    const batch = db.batch();
-    allUsersSnapshot.forEach((doc) => {
-        batch.update(doc.ref, { isMainTeacher: false });
-    });
-    
-    // Then set the specified user as main teacher
-    const targetUserSnapshot = await usersCollectionRef.where("email", "==", userEmail).get();
-    if (!targetUserSnapshot.empty) {
+    try {
+        const usersCollectionRef = db.collection('users');
+        
+        // First, find the target user
+        const targetUserSnapshot = await usersCollectionRef.where("email", "==", userEmail).get();
+        if (targetUserSnapshot.empty) {
+            throw new Error(`User with email ${userEmail} not found`);
+        }
+        
         const targetUserDoc = targetUserSnapshot.docs[0];
-        batch.update(targetUserDoc.ref, { isMainTeacher: true });
-    } else {
-        throw new Error(`User with email ${userEmail} not found`);
+        const targetUserData = targetUserDoc.data();
+        
+        // Only proceed if the user is a teacher
+        if (targetUserData.role !== 'teacher') {
+            throw new Error(`User ${userEmail} is not a teacher`);
+        }
+        
+        // Check if they're already the main teacher
+        if (targetUserData.isMainTeacher) {
+            console.log(`✅ ${userEmail} is already the main teacher`);
+            return;
+        }
+        
+        // Get all teachers and create batch
+        const allTeachersSnapshot = await usersCollectionRef.where("role", "==", "teacher").get();
+        const batch = db.batch();
+        
+        // Remove main teacher status from all other teachers
+        allTeachersSnapshot.forEach((doc) => {
+            if (doc.id !== targetUserDoc.id) {
+                batch.update(doc.ref, { isMainTeacher: false });
+            }
+        });
+        
+        // Set the specified user as main teacher
+        batch.update(targetUserDoc.ref, { 
+            isMainTeacher: true,
+            lastMainTeacherUpdate: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        await batch.commit();
+        console.log(`✅ Successfully set ${userEmail} as main teacher`);
+        
+    } catch (error) {
+        console.error('Error setting main teacher:', error);
+        throw error;
     }
-    
-    await batch.commit();
 };
 
 /**
  * Ensures the designated main teacher email is set as main teacher
  * This function should be called during app initialization
+ * FIXED: Only runs when necessary to prevent data loss
  */
 export const ensureMainTeacher = async (): Promise<void> => {
     if (!isFirebaseConfigured || !db) return;
@@ -303,15 +333,26 @@ export const ensureMainTeacher = async (): Promise<void> => {
             const mainTeacherDoc = mainTeacherSnapshot.docs[0];
             const mainTeacherData = mainTeacherDoc.data();
             
-            // If the designated main teacher is not set as main teacher, fix it
+            // Only fix if the designated main teacher is not set as main teacher
             if (!mainTeacherData.isMainTeacher) {
-                // Remove main teacher status from all other teachers
-                const allTeachersSnapshot = await usersCollectionRef.where("role", "==", "teacher").get();
+                console.log(`🔧 Fixing main teacher status for ${mainTeacherEmail}`);
+                
+                // Check if there are any other main teachers
+                const otherMainTeachersSnapshot = await usersCollectionRef
+                    .where("role", "==", "teacher")
+                    .where("isMainTeacher", "==", true)
+                    .get();
+                
                 const batch = db.batch();
                 
-                allTeachersSnapshot.forEach((doc) => {
-                    batch.update(doc.ref, { isMainTeacher: false });
-                });
+                // Only remove main teacher status from other teachers if there are conflicts
+                if (!otherMainTeachersSnapshot.empty) {
+                    otherMainTeachersSnapshot.forEach((doc) => {
+                        if (doc.id !== mainTeacherDoc.id) {
+                            batch.update(doc.ref, { isMainTeacher: false });
+                        }
+                    });
+                }
                 
                 // Set the designated main teacher as main teacher
                 batch.update(mainTeacherDoc.ref, { 
@@ -321,7 +362,11 @@ export const ensureMainTeacher = async (): Promise<void> => {
                 
                 await batch.commit();
                 console.log(`✅ Ensured ${mainTeacherEmail} is set as main teacher`);
+            } else {
+                console.log(`✅ ${mainTeacherEmail} is already set as main teacher`);
             }
+        } else {
+            console.log(`⚠️ Designated main teacher ${mainTeacherEmail} not found as teacher`);
         }
     } catch (error) {
         console.error('Error ensuring main teacher:', error);
