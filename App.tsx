@@ -1,6 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { User, LearningPlan, Module, Lesson, Student, Collaborator, CollaboratorPermission, StudyMaterial, Challenge, ChallengeSubmission } from './types';
-import { onAuthStateChanged, logout, getLearningPlan, saveLearningPlan, updateLessonInDb, getStudents, deleteStudent, cleanupDuplicateStudents, addStudyMaterial, updateStudyMaterial, deleteStudyMaterial, subscribeToStudyMaterials, addChallenge, submitChallengeAnswer, getUserChallengeStats, getStudentLeaderboard, ensureMainTeacher } from './services/firebaseService';
+import { 
+  onAuthStateChanged, 
+  logout, 
+  getLearningPlan, 
+  saveLearningPlan, 
+  updateLessonInDb, 
+  getStudents, 
+  deleteStudent, 
+  cleanupDuplicateStudents, 
+  addStudyMaterial, 
+  updateStudyMaterial, 
+  deleteStudyMaterial, 
+  subscribeToStudyMaterials, 
+  addChallenge, 
+  submitChallengeAnswer, 
+  getUserChallengeStats, 
+  getStudentLeaderboard, 
+  ensureMainTeacher 
+} from './services/firebaseService';
 import { generateLearningPlan } from './services/geminiService';
 import { isFirebaseConfigured } from './services/firebaseConfig';
 
