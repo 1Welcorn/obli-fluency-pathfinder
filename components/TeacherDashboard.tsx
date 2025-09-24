@@ -31,8 +31,8 @@ const gradeLevelLabels: { [key: string]: string } = {
 };
 
 const StudentCard: React.FC<{ student: Student, onSelect: () => void, onDelete: () => void }> = ({ student, onSelect, onDelete }) => {
-    const totalModules = student.learningPlan?.modules.length || 0;
-    const completedModules = student.learningPlan?.modules.filter(m => m.lessons.every(l => l.status === 'completed')).length || 0;
+    const totalModules = student.learningPlan?.modules?.length || 0;
+    const completedModules = student.learningPlan?.modules?.filter(m => m.lessons.every(l => l.status === 'completed')).length || 0;
     const progress = totalModules > 0 ? (completedModules / totalModules) * 100 : 0;
     
     const handleDeleteClick = (e: React.MouseEvent) => {
@@ -93,8 +93,8 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPastExamModalOpen, setIsPastExamModalOpen] = useState(false);
   
-  const collaboratorCount = collaborators.length;
-  const editorCount = collaborators.filter(c => c.permission === 'editor').length;
+  const collaboratorCount = collaborators?.length || 0;
+  const editorCount = collaborators?.filter(c => c.permission === 'editor').length || 0;
   const viewerCount = collaboratorCount - editorCount;
   const canManage = canManageCollaborators(currentUser);
 
