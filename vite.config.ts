@@ -5,7 +5,7 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       // GitHub Pages configuration
-      base: '/obli-fluency-pathfinder/',
+      base: mode === 'production' ? '/obli-fluency-pathfinder/' : '/',
       // Optimize build performance
       build: {
         target: 'esnext',
