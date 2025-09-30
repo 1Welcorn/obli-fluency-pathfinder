@@ -12,12 +12,13 @@ interface DashboardProps {
   onViewChallenges: () => void;
   onViewStudyMaterials: () => void;
   onViewProgress: () => void;
+  onViewFluencyInsights?: () => void;
   isPortugueseHelpVisible: boolean;
 }
 
 
 
-const Dashboard: React.FC<DashboardProps> = ({ plan, onViewNotes, onViewChallenges, onViewStudyMaterials, onViewProgress, isPortugueseHelpVisible }) => {
+const Dashboard: React.FC<DashboardProps> = ({ plan, onViewNotes, onViewChallenges, onViewStudyMaterials, onViewProgress, onViewFluencyInsights, isPortugueseHelpVisible }) => {
   return (
     <div className="animate-fade-in max-w-6xl mx-auto">
       {/* Hero Section */}
@@ -115,6 +116,29 @@ const Dashboard: React.FC<DashboardProps> = ({ plan, onViewNotes, onViewChalleng
             </div>
           </button>
         </div>
+
+        {/* Fluency Insights */}
+        {onViewFluencyInsights && (
+          <div className="group">
+            <button 
+              onClick={onViewFluencyInsights} 
+              className="w-full h-48 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-3xl shadow-lg border border-emerald-100 hover:shadow-2xl hover:border-emerald-300 transition-all duration-300 hover:-translate-y-2"
+            >
+              <div className="p-4 bg-emerald-100 rounded-2xl group-hover:bg-emerald-200 transition-colors">
+                <svg className="h-12 w-12 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div className="text-center">
+                <span className="font-bold text-xl text-slate-800">Fluency Insights</span>
+                {isPortugueseHelpVisible && (
+                  <p className="text-sm text-slate-600 mt-1 italic">Insights de Fluência</p>
+                )}
+                <p className="text-xs text-emerald-600 mt-1">AI-powered analysis</p>
+              </div>
+            </button>
+          </div>
+        )}
       </div>
 
     </div>

@@ -31,33 +31,51 @@ export const onAuthStateChanged = (callback: (user: User | null) => void): (() =
                 // User is signed in, now get their role from Firestore.
                 // FIX: Used db.collection().doc() (v8 compat)
                 const userDocRef = db.collection('users').doc(firebaseUser.uid);
-                // FIX: Used userDocRef.get() (v8 compat)
-                const userDocSnap = await userDocRef.get();
-
-                if (userDocSnap.exists) {
-                    const userData = userDocSnap.data()!;
-                    const user: User = {
-                        uid: firebaseUser.uid,
-                        email: firebaseUser.email,
-                        displayName: firebaseUser.displayName,
-                        photoURL: firebaseUser.photoURL,
-                        role: userData.role as UserRole,
-                        isMainTeacher: userData.isMainTeacher || false,
-                    };
-                    callback(user);
-                } else {
-                    console.warn(`User document not found for uid: ${firebaseUser.uid}. Creating default user.`);
-                    // Create a default user document instead of logging out
-                    const defaultUser: User = {
-                        uid: firebaseUser.uid,
-                        email: firebaseUser.email,
-                        displayName: firebaseUser.displayName,
-                        photoURL: firebaseUser.photoURL,
-                        role: 'student',
-                        isMainTeacher: false,
-                    };
-                    callback(defaultUser);
+                
+                // Retry mechanism for role switching - try up to 3 times with small delays
+                let userDocSnap;
+                let retryCount = 0;
+                const maxRetries = 3;
+                
+                while (retryCount < maxRetries) {
+                    // FIX: Used userDocRef.get() (v8 compat)
+                    userDocSnap = await userDocRef.get();
+                    
+                    if (userDocSnap.exists) {
+                        const userData = userDocSnap.data()!;
+                        const user: User = {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            displayName: firebaseUser.displayName,
+                            photoURL: firebaseUser.photoURL,
+                            role: userData.role as UserRole,
+                            isMainTeacher: userData.isMainTeacher || false,
+                        };
+                        callback(user);
+                        return; // Success, exit the retry loop
+                    }
+                    
+                    // If document doesn't exist and we haven't reached max retries, wait and try again
+                    if (retryCount < maxRetries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 50 * (retryCount + 1))); // Increasing delay
+                        retryCount++;
+                    } else {
+                        break; // Exit retry loop
+                    }
                 }
+
+                // If we get here, either the document doesn't exist or we've exhausted retries
+                console.warn(`User document not found for uid: ${firebaseUser.uid} after ${maxRetries} attempts. Creating default user.`);
+                // Create a default user document instead of logging out
+                const defaultUser: User = {
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    displayName: firebaseUser.displayName,
+                    photoURL: firebaseUser.photoURL,
+                    role: 'student',
+                    isMainTeacher: false,
+                };
+                callback(defaultUser);
             } catch (error) {
                 console.error('Error fetching user data:', error);
                 // Create a default user on error
@@ -119,12 +137,18 @@ export const signInWithGoogle = async (role: UserRole): Promise<void> => {
                     isMainTeacher: isDesignatedMainTeacher, // Set as main teacher if it's the designated email
                     lastRoleChange: firebase.firestore.FieldValue.serverTimestamp(),
                 });
+                
+                // Wait a moment for the update to propagate before the auth state change fires
+                await new Promise(resolve => setTimeout(resolve, 100));
             } else if (isDesignatedMainTeacher && !existingData.isMainTeacher) {
                 // If this is the designated main teacher but not currently set as main, update it
                 await userDocRef.update({
                     isMainTeacher: true,
                     lastMainTeacherUpdate: firebase.firestore.FieldValue.serverTimestamp(),
                 });
+                
+                // Wait a moment for the update to propagate
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
     } catch (error: any) {

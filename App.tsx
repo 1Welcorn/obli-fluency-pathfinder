@@ -42,8 +42,9 @@ import StudyMaterialsModal from './components/StudyMaterialsModal';
 import OBLIAI from './components/OBLIAI';
 import ProgressDashboard from './components/ProgressDashboard';
 import TeacherProgressView from './components/TeacherProgressView';
+import FluencyInsightsDashboard from './components/FluencyInsightsDashboard';
 
-type AppView = 'login' | 'welcome' | 'generating' | 'student_dashboard' | 'module_view' | 'notes_view' | 'challenge_arena' | 'study_materials_view' | 'obli_ai' | 'teacher_dashboard' | 'student_progress_view' | 'progress_dashboard' | 'teacher_progress_view';
+type AppView = 'login' | 'welcome' | 'generating' | 'student_dashboard' | 'module_view' | 'notes_view' | 'challenge_arena' | 'study_materials_view' | 'obli_ai' | 'teacher_dashboard' | 'student_progress_view' | 'progress_dashboard' | 'teacher_progress_view' | 'fluency_insights';
 
 const App: React.FC = () => {
     // Core State
@@ -90,27 +91,33 @@ const App: React.FC = () => {
             
             if (currentUser) {
                 setIsLoading(true);
-                if (currentUser.role === 'student') {
-                    const plan = await getLearningPlan(currentUser.uid);
-                    if (plan) {
-                        setLearningPlan(plan);
-                        // Infer grade level from a student object if needed, or store it alongside the plan
-                        // For now, we'll leave it as is, but a real app would store this.
-                        setView('student_dashboard');
-                    } else {
-                        setView('welcome');
+                try {
+                    if (currentUser.role === 'student') {
+                        const plan = await getLearningPlan(currentUser.uid);
+                        if (plan) {
+                            setLearningPlan(plan);
+                            // Infer grade level from a student object if needed, or store it alongside the plan
+                            // For now, we'll leave it as is, but a real app would store this.
+                            setView('student_dashboard');
+                        } else {
+                            setView('welcome');
+                        }
+                    } else { // Teacher
+                        // Clean up any duplicate students first
+                        await cleanupDuplicateStudents();
+                        
+                        const studentList = await getStudents();
+                        setStudents(studentList);
+                        
+                        setView('teacher_dashboard');
                     }
-                } else { // Teacher
-                    // Clean up any duplicate students first
-                    await cleanupDuplicateStudents();
-                    
-                    const studentList = await getStudents();
-                    setStudents(studentList);
-                    
-                    
-                    setView('teacher_dashboard');
+                } catch (error) {
+                    console.error('Error during role-based navigation:', error);
+                    // Fallback to login if there's an error
+                    setView('login');
+                } finally {
+                    setIsLoading(false);
                 }
-                setIsLoading(false);
             } else {
                 setView('login');
                 setLearningPlan(null); // Clear data on logout
@@ -388,6 +395,7 @@ const App: React.FC = () => {
                     onViewChallenges={() => setView('challenge_arena')}
                     onViewStudyMaterials={() => setView('study_materials_view')}
                     onViewProgress={() => setView('progress_dashboard')}
+                    onViewFluencyInsights={() => setView('fluency_insights')}
                     isPortugueseHelpVisible={isPortugueseHelpVisible}
                 />;
             case 'module_view':
@@ -456,6 +464,11 @@ const App: React.FC = () => {
             case 'teacher_progress_view':
                 return <TeacherProgressView
                     onBack={() => setView('teacher_dashboard')}
+                    currentUser={user}
+                />;
+            case 'fluency_insights':
+                return <FluencyInsightsDashboard
+                    onBack={() => setView('student_dashboard')}
                     currentUser={user}
                 />;
             default:

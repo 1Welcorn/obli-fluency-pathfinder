@@ -18,6 +18,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ isPortugueseHelpVisible }) =>
     try {
       await signInWithGoogle(role);
       // The App.tsx onAuthStateChanged listener will handle navigation.
+      // Keep loading state active until navigation occurs
     } catch (err: any) {
       setError(err.message || "Failed to sign in. Please try again.");
       setIsLoading(false);
