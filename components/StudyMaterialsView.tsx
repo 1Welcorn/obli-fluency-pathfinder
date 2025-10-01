@@ -17,6 +17,7 @@ import { getNotesForMaterial, saveNote, deleteNote, getNotesCountForMaterial } f
 interface StudyMaterialsViewProps {
     studyMaterials: StudyMaterial[];
     onBack: () => void;
+    onOpenAITutor?: () => void;
     isPortugueseHelpVisible: boolean;
     currentUser: User | null;
 }
@@ -24,6 +25,7 @@ interface StudyMaterialsViewProps {
 const StudyMaterialsView: React.FC<StudyMaterialsViewProps> = ({
     studyMaterials,
     onBack,
+    onOpenAITutor,
     isPortugueseHelpVisible,
     currentUser
 }) => {
@@ -374,6 +376,44 @@ const StudyMaterialsView: React.FC<StudyMaterialsViewProps> = ({
                                                 )}
                                             </div>
                                         ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* AI Tutor Chat Section */}
+                        {onOpenAITutor && (
+                            <div className="mb-8">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 bg-purple-100 rounded-lg">
+                                        <svg className="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-slate-800">AI English Tutor</h2>
+                                    <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-semibold rounded-full">
+                                        Practice
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    <div className="group">
+                                        <button 
+                                            onClick={onOpenAITutor} 
+                                            className="w-full h-48 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-purple-50 to-indigo-50 p-8 rounded-3xl shadow-lg border border-purple-100 hover:shadow-2xl hover:border-purple-300 transition-all duration-300 hover:-translate-y-2"
+                                        >
+                                            <div className="p-4 bg-purple-100 rounded-2xl group-hover:bg-purple-200 transition-colors">
+                                                <svg className="h-12 w-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-center">
+                                                <span className="font-bold text-xl text-slate-800">Praticar com I.A.</span>
+                                                {isPortugueseHelpVisible && (
+                                                    <p className="text-sm text-slate-600 mt-1 italic">Chat com IA Tutor</p>
+                                                )}
+                                                <p className="text-xs text-purple-600 mt-1">Conversação em inglês</p>
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}

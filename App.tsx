@@ -398,7 +398,6 @@ const App: React.FC = () => {
                     onViewStudyMaterials={() => setView('study_materials_view')}
                     onViewProgress={() => setView('progress_dashboard')}
                     onViewFluencyInsights={() => setView('fluency_insights')}
-                    onOpenAITutor={() => setIsAITutorOpen(true)}
                     isPortugueseHelpVisible={isPortugueseHelpVisible}
                 />;
             case 'module_view':
@@ -429,6 +428,7 @@ const App: React.FC = () => {
                 return <StudyMaterialsView 
                     studyMaterials={studyMaterials}
                     onBack={() => setView('student_dashboard')}
+                    onOpenAITutor={() => setIsAITutorOpen(true)}
                     isPortugueseHelpVisible={isPortugueseHelpVisible}
                     currentUser={user}
                 />;
