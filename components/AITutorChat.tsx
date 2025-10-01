@@ -76,9 +76,38 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
     return portugueseCount > englishCount ? 'pt' : 'en';
   };
 
+  // Add natural pauses and improve speech flow
+  const addNaturalPauses = (text: string): string => {
+    return text
+      // Add pauses after sentences
+      .replace(/\.\s+/g, '. ')
+      .replace(/!\s+/g, '! ')
+      .replace(/\?\s+/g, '? ')
+      // Add pauses after commas
+      .replace(/,\s+/g, ', ')
+      // Add pauses after colons and semicolons
+      .replace(/:\s+/g, ': ')
+      .replace(/;\s+/g, '; ')
+      // Add pauses for better flow
+      .replace(/\s+and\s+/g, ' and ')
+      .replace(/\s+or\s+/g, ' or ')
+      .replace(/\s+but\s+/g, ' but ')
+      .replace(/\s+so\s+/g, ' so ')
+      .replace(/\s+then\s+/g, ' then ')
+      // Portuguese equivalents
+      .replace(/\s+e\s+/g, ' e ')
+      .replace(/\s+ou\s+/g, ' ou ')
+      .replace(/\s+mas\s+/g, ' mas ')
+      .replace(/\s+então\s+/g, ' então ')
+      .replace(/\s+assim\s+/g, ' assim ')
+      // Clean up multiple spaces
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   // Clean text for speech synthesis
   const cleanTextForSpeech = (text: string): string => {
-    return text
+    return addNaturalPauses(text
       // Remove emojis and special characters
       .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticons
       .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Misc symbols
@@ -115,7 +144,8 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
       // Clean up extra spaces and line breaks
       .replace(/\s+/g, ' ')
       .replace(/\n+/g, ' ')
-      .trim();
+      .trim()
+    );
   };
 
   // Text-to-Speech function with language detection
@@ -132,46 +162,88 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
     const language = detectLanguage(cleanedText);
     setCurrentLanguage(language);
     
-    // Configure voice settings based on language
+    // Configure voice settings based on language for more natural speech
     if (language === 'pt') {
-      // Portuguese settings - faster and more natural
-      utterance.rate = 1.0; // Normal speed for Portuguese
-      utterance.pitch = 1.0;
-      utterance.volume = 0.8;
+      // Portuguese settings - natural Brazilian Portuguese
+      utterance.rate = 1.1; // Slightly faster for natural flow
+      utterance.pitch = 0.95; // Slightly lower pitch for warmth
+      utterance.volume = 0.9; // Higher volume for clarity
       utterance.lang = 'pt-BR'; // Brazilian Portuguese
     } else {
-      // English settings - slower for learning
-      utterance.rate = 0.85; // Slower for better understanding
-      utterance.pitch = 1.0;
-      utterance.volume = 0.8;
+      // English settings - natural American English
+      utterance.rate = 0.95; // Slightly slower for clarity but natural
+      utterance.pitch = 1.05; // Slightly higher pitch for friendliness
+      utterance.volume = 0.9; // Higher volume for clarity
       utterance.lang = 'en-US'; // US English
     }
 
-    // Get voices and select appropriate one
+    // Get voices and select the most natural-sounding one
     const voices = speechSynthesis.getVoices();
     let selectedVoice = null;
 
     if (language === 'pt') {
-      // Try to find a Brazilian Portuguese voice
+      // Try to find the best Brazilian Portuguese voice
       selectedVoice = voices.find(voice => 
-        voice.lang === 'pt-BR' || voice.lang.startsWith('pt')
+        voice.lang === 'pt-BR' && (
+          voice.name.includes('Luciana') || 
+          voice.name.includes('Daniel') || 
+          voice.name.includes('Google')
+        )
+      ) || voices.find(voice => 
+        voice.lang === 'pt-BR' && voice.name.includes('Female')
+      ) || voices.find(voice => 
+        voice.lang === 'pt-BR'
+      ) || voices.find(voice => 
+        voice.lang.startsWith('pt')
       );
     } else {
-      // Try to find a female English voice
+      // Try to find the best English voice
       selectedVoice = voices.find(voice => 
+        voice.lang.startsWith('en') && (
+          voice.name.includes('Samantha') || 
+          voice.name.includes('Karen') || 
+          voice.name.includes('Susan') ||
+          voice.name.includes('Victoria') ||
+          voice.name.includes('Google')
+        )
+      ) || voices.find(voice => 
         voice.lang.startsWith('en') && voice.name.includes('Female')
-      ) || voices.find(voice => voice.lang.startsWith('en'));
+      ) || voices.find(voice => 
+        voice.lang.startsWith('en') && !voice.name.includes('Male')
+      ) || voices.find(voice => 
+        voice.lang.startsWith('en')
+      );
     }
     
     if (selectedVoice) {
       utterance.voice = selectedVoice;
+      console.log(`Using voice: ${selectedVoice.name} (${selectedVoice.lang})`);
+    } else {
+      console.log(`No specific voice found, using default for ${language}`);
     }
 
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    // Add event listeners for better control
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      console.log('Speech started');
+    };
+    
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setCurrentLanguage(null);
+      console.log('Speech ended');
+    };
+    
+    utterance.onerror = (event) => {
+      setIsSpeaking(false);
+      setCurrentLanguage(null);
+      console.error('Speech error:', event.error);
+    };
 
-    speechSynthesis.speak(utterance);
+    // Add a small delay to ensure voices are loaded
+    setTimeout(() => {
+      speechSynthesis.speak(utterance);
+    }, 100);
   };
 
   // Stop speaking function
@@ -279,6 +351,15 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
                 <div className="px-3 py-1 bg-white/20 rounded-lg backdrop-blur-sm">
                   <span className="text-xs font-medium text-white">
                     {currentLanguage === 'pt' ? '🇧🇷 Português' : '🇺🇸 English'}
+                  </span>
+                </div>
+              )}
+              
+              {/* Voice Quality Indicator */}
+              {isVoiceEnabled && (
+                <div className="px-2 py-1 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <span className="text-xs text-white/80">
+                    {isSpeaking ? '🎤 Speaking' : '🔊 Ready'}
                   </span>
                 </div>
               )}
