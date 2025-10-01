@@ -6,17 +6,13 @@ export default defineConfig(({ mode }) => {
     return {
       // Vercel configuration
       base: '/',
-      // Optimize build performance
+      // Optimize build performance for Vercel
       build: {
-        target: 'esnext',
+        target: 'es2020',
         minify: 'esbuild',
         rollupOptions: {
           output: {
-            manualChunks: {
-              vendor: ['react', 'react-dom'],
-              firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-              ai: ['@google/generative-ai']
-            }
+            manualChunks: undefined
           }
         },
         chunkSizeWarningLimit: 1000
