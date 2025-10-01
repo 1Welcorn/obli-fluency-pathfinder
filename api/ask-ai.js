@@ -28,9 +28,9 @@ export default async function handler(req, res) {
 
     // Initialize Google AI
     const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     
-    console.log('Using model: gemini-1.5-pro-latest');
+    console.log('Using model: gemini-1.5-flash');
     console.log('API Key present:', !!process.env.API_KEY);
 
     // OBLI 2025 Fluency Coach System Instructions
