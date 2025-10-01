@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
     // Initialize Google AI
     const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
     // OBLI 2025 Fluency Coach System Instructions
     const systemInstructions = `You are the OBLI 2025 Fluency Coach—a friendly, motivating, and expert AI guide for the OBLI 2025.2 English fluency contest. Your purpose is to help students progress through personalized, fun, and engaging learning paths based on official contest requirements and student interests. You support students in both English and Portuguese, adapting your style and recommendations as needed.
@@ -123,9 +123,15 @@ Remember: You're not just a tutor—you're a contest coach preparing students fo
 
   } catch (error) {
     console.error('AI Generation Error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.status,
+      errorDetails: error.errorDetails
+    });
     res.status(500).json({ 
       error: 'Erro ao contatar a IA.',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? error.message : 'API Error',
+      model: 'gemini-pro'
     });
   }
 }
