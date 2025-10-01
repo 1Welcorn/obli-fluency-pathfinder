@@ -16,7 +16,10 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const chatWindowRef = useRef<HTMLDivElement>(null);
+  const speechSynthesis = window.speechSynthesis;
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -24,6 +27,54 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
       chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Cleanup speech when component unmounts
+  useEffect(() => {
+    return () => {
+      if (speechSynthesis) {
+        speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  // Text-to-Speech function
+  const speakText = (text: string) => {
+    if (!isVoiceEnabled || !speechSynthesis) return;
+
+    // Stop any current speech
+    speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Configure voice settings
+    utterance.rate = 0.9; // Slightly slower for better understanding
+    utterance.pitch = 1.0;
+    utterance.volume = 0.8;
+
+    // Try to use a female English voice for better AI feel
+    const voices = speechSynthesis.getVoices();
+    const englishVoice = voices.find(voice => 
+      voice.lang.startsWith('en') && voice.name.includes('Female')
+    ) || voices.find(voice => voice.lang.startsWith('en'));
+    
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    speechSynthesis.speak(utterance);
+  };
+
+  // Stop speaking function
+  const stopSpeaking = () => {
+    if (speechSynthesis) {
+      speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  };
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -68,6 +119,11 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      
+      // Automatically speak AI response
+      setTimeout(() => {
+        speakText(data.response);
+      }, 500); // Small delay to let the message appear first
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
@@ -103,11 +159,43 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <div>
+            <div className="flex-1">
               <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
                 OBLI 2025 AI Coach
               </h2>
               <p className="text-white/80 text-sm font-medium">Your personal English fluency mentor</p>
+            </div>
+            
+            {/* Voice Controls */}
+            <div className="flex items-center space-x-2">
+              {/* Voice Toggle */}
+              <button
+                onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm ${
+                  isVoiceEnabled 
+                    ? 'bg-white/20 hover:bg-white/30' 
+                    : 'bg-white/10 hover:bg-white/20'
+                } ${isSpeaking ? 'voice-pulse' : ''}`}
+                title={isVoiceEnabled ? 'Voice enabled' : 'Voice disabled'}
+              >
+                <svg className={`w-5 h-5 ${isVoiceEnabled ? 'text-white' : 'text-white/60'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </button>
+              
+              {/* Stop Speaking */}
+              {isSpeaking && (
+                <button
+                  onClick={stopSpeaking}
+                  className="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
+                  title="Stop speaking"
+                >
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9l6 6m0-6l-6 6" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
           <button
@@ -214,11 +302,24 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
                   }`}
                 >
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
-                  <p className={`text-xs mt-2 ${
+                  <div className={`flex items-center justify-between mt-2 ${
                     message.isUser ? 'text-blue-100' : 'text-gray-400'
                   }`}>
-                    {message.timestamp.toLocaleTimeString()}
-                  </p>
+                    <p className="text-xs">
+                      {message.timestamp.toLocaleTimeString()}
+                    </p>
+                    {!message.isUser && isVoiceEnabled && (
+                      <button
+                        onClick={() => speakText(message.text)}
+                        className="ml-2 p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                        title="Speak this message"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -246,7 +347,9 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
                       <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
                       <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
-                    <span className="text-sm text-gray-600 font-medium">AI Coach is thinking...</span>
+                    <span className="text-sm text-gray-600 font-medium">
+                      {isSpeaking ? 'AI Coach is speaking...' : 'AI Coach is thinking...'}
+                    </span>
                   </div>
                 </div>
               </div>
