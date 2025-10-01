@@ -76,6 +76,48 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
     return portugueseCount > englishCount ? 'pt' : 'en';
   };
 
+  // Clean text for speech synthesis
+  const cleanTextForSpeech = (text: string): string => {
+    return text
+      // Remove emojis and special characters
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticons
+      .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Misc symbols
+      .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Transport
+      .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '') // Flags
+      .replace(/[\u{2600}-\u{26FF}]/gu, '') // Misc symbols
+      .replace(/[\u{2700}-\u{27BF}]/gu, '') // Dingbats
+      .replace(/[\u{1F900}-\u{1F9FF}]/gu, '') // Supplemental symbols
+      .replace(/[\u{1FA70}-\u{1FAFF}]/gu, '') // Symbols and pictographs
+      // Remove markdown formatting
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
+      .replace(/\*(.*?)\*/g, '$1') // Italic
+      .replace(/`(.*?)`/g, '$1') // Code
+      .replace(/#{1,6}\s/g, '') // Headers
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Links
+      // Remove common AI response patterns
+      .replace(/^🏆\s*\*?\*?Faltam\s+\d+\s+dias\s+para\s+a\s+OBLI\s+2025\.2!\*?\*?\s*🏆/gi, '')
+      .replace(/^Olá!\s*Eu\s+sou\s+seu\s+OBLI\s+2025\s+Fluency\s+Coach!/gi, 'Olá! Eu sou seu OBLI 2025 Fluency Coach!')
+      .replace(/^Hello!\s*I'm\s+your\s+OBLI\s+2025\s+Fluency\s+Coach!/gi, 'Hello! I am your OBLI 2025 Fluency Coach!')
+      // Remove excessive punctuation
+      .replace(/[!]{2,}/g, '!') // Multiple exclamation marks
+      .replace(/[?]{2,}/g, '?') // Multiple question marks
+      .replace(/[.]{2,}/g, '.') // Multiple periods
+      .replace(/[~]{2,}/g, '') // Multiple tildes
+      .replace(/[_]{2,}/g, '') // Multiple underscores
+      // Remove special characters that shouldn't be spoken
+      .replace(/[🏆🎯💬📊👨‍🏫📈📚🎨☁️🔧🎤🌍🇧🇷🇺🇸🤖✨🎉🚀📱🎓]/g, '')
+      // Remove common symbols
+      .replace(/[•·▪▫]/g, '') // Bullet points
+      .replace(/[→←↑↓]/g, '') // Arrows
+      .replace(/[★☆]/g, '') // Stars
+      .replace(/[✓✔]/g, '') // Checkmarks
+      .replace(/[✗✘]/g, '') // X marks
+      // Clean up extra spaces and line breaks
+      .replace(/\s+/g, ' ')
+      .replace(/\n+/g, ' ')
+      .trim();
+  };
+
   // Text-to-Speech function with language detection
   const speakText = (text: string) => {
     if (!isVoiceEnabled || !speechSynthesis) return;
@@ -83,8 +125,11 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
     // Stop any current speech
     speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    const language = detectLanguage(text);
+    const cleanedText = cleanTextForSpeech(text);
+    if (!cleanedText) return; // Don't speak if nothing left after cleaning
+
+    const utterance = new SpeechSynthesisUtterance(cleanedText);
+    const language = detectLanguage(cleanedText);
     setCurrentLanguage(language);
     
     // Configure voice settings based on language
