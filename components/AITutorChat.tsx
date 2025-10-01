@@ -19,6 +19,8 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState<'pt' | 'en' | null>(null);
+  const [voiceGender, setVoiceGender] = useState<'male' | 'female'>('female');
+  const [isGenderSwitching, setIsGenderSwitching] = useState(false);
   const chatWindowRef = useRef<HTMLDivElement>(null);
   const speechSynthesis = window.speechSynthesis;
 
@@ -211,39 +213,76 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
     const voices = speechSynthesis.getVoices();
     let selectedVoice = null;
 
-    if (language === 'pt') {
-      // Try to find the best Brazilian Portuguese voice
-      selectedVoice = voices.find(voice => 
-        voice.lang === 'pt-BR' && (
-          voice.name.includes('Luciana') || 
-          voice.name.includes('Daniel') || 
-          voice.name.includes('Google')
-        )
-      ) || voices.find(voice => 
-        voice.lang === 'pt-BR' && voice.name.includes('Female')
-      ) || voices.find(voice => 
-        voice.lang === 'pt-BR'
-      ) || voices.find(voice => 
-        voice.lang.startsWith('pt')
-      );
-    } else {
-      // Try to find the best English voice
-      selectedVoice = voices.find(voice => 
-        voice.lang.startsWith('en') && (
-          voice.name.includes('Samantha') || 
-          voice.name.includes('Karen') || 
-          voice.name.includes('Susan') ||
-          voice.name.includes('Victoria') ||
-          voice.name.includes('Google')
-        )
-      ) || voices.find(voice => 
-        voice.lang.startsWith('en') && voice.name.includes('Female')
-      ) || voices.find(voice => 
-        voice.lang.startsWith('en') && !voice.name.includes('Male')
-      ) || voices.find(voice => 
-        voice.lang.startsWith('en')
-      );
-    }
+          if (language === 'pt') {
+            // Portuguese voice selection based on gender preference
+            if (voiceGender === 'female') {
+              selectedVoice = voices.find(voice => 
+                voice.lang === 'pt-BR' && (
+                  voice.name.includes('Luciana') || 
+                  voice.name.includes('Female') ||
+                  voice.name.includes('Google')
+                )
+              ) || voices.find(voice => 
+                voice.lang === 'pt-BR' && !voice.name.includes('Male')
+              ) || voices.find(voice => 
+                voice.lang === 'pt-BR'
+              ) || voices.find(voice => 
+                voice.lang.startsWith('pt') && !voice.name.includes('Male')
+              );
+            } else {
+              // Male Portuguese voices
+              selectedVoice = voices.find(voice => 
+                voice.lang === 'pt-BR' && (
+                  voice.name.includes('Daniel') || 
+                  voice.name.includes('Male') ||
+                  voice.name.includes('Google')
+                )
+              ) || voices.find(voice => 
+                voice.lang === 'pt-BR' && voice.name.includes('Male')
+              ) || voices.find(voice => 
+                voice.lang.startsWith('pt') && voice.name.includes('Male')
+              ) || voices.find(voice => 
+                voice.lang === 'pt-BR'
+              );
+            }
+          } else {
+            // English voice selection based on gender preference
+            if (voiceGender === 'female') {
+              selectedVoice = voices.find(voice => 
+                voice.lang.startsWith('en') && (
+                  voice.name.includes('Samantha') || 
+                  voice.name.includes('Karen') || 
+                  voice.name.includes('Susan') ||
+                  voice.name.includes('Victoria') ||
+                  voice.name.includes('Female') ||
+                  voice.name.includes('Google')
+                )
+              ) || voices.find(voice => 
+                voice.lang.startsWith('en') && voice.name.includes('Female')
+              ) || voices.find(voice => 
+                voice.lang.startsWith('en') && !voice.name.includes('Male')
+              ) || voices.find(voice => 
+                voice.lang.startsWith('en')
+              );
+            } else {
+              // Male English voices
+              selectedVoice = voices.find(voice => 
+                voice.lang.startsWith('en') && (
+                  voice.name.includes('Alex') || 
+                  voice.name.includes('Tom') || 
+                  voice.name.includes('David') ||
+                  voice.name.includes('Male') ||
+                  voice.name.includes('Google')
+                )
+              ) || voices.find(voice => 
+                voice.lang.startsWith('en') && voice.name.includes('Male')
+              ) || voices.find(voice => 
+                voice.lang.startsWith('en') && !voice.name.includes('Female')
+              ) || voices.find(voice => 
+                voice.lang.startsWith('en')
+              );
+            }
+          }
     
     if (selectedVoice) {
       utterance.voice = selectedVoice;
@@ -281,6 +320,87 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
     if (speechSynthesis) {
       speechSynthesis.cancel();
       setIsSpeaking(false);
+    }
+  };
+
+  // Gender switching function with animation
+  const switchGender = (newGender: 'male' | 'female') => {
+    if (newGender === voiceGender) return;
+    
+    setIsGenderSwitching(true);
+    stopSpeaking(); // Stop any current speech when switching
+    
+    setTimeout(() => {
+      setVoiceGender(newGender);
+      setIsGenderSwitching(false);
+    }, 300); // Half of the animation duration
+  };
+
+  // Avatar component for different genders
+  const AvatarComponent = ({ gender, isSpeaking, isLoading }: { gender: 'male' | 'female', isSpeaking: boolean, isLoading: boolean }) => {
+    if (gender === 'male') {
+      return (
+        <div className={`w-32 h-32 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-full flex items-center justify-center shadow-2xl float-animation animate-breathe relative overflow-hidden ${isGenderSwitching ? 'animate-gender-switch' : ''}`}>
+          {/* Background glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-500 rounded-full animate-pulse opacity-75"></div>
+          
+          {/* Male Avatar face */}
+          <div className="relative z-10 w-24 h-24 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+            {/* Eyes */}
+            <div className="flex space-x-2">
+              <div className="w-3 h-3 bg-white rounded-full animate-blink"></div>
+              <div className="w-3 h-3 bg-white rounded-full animate-blink" style={{animationDelay: '0.1s'}}></div>
+            </div>
+            
+            {/* Mustache for male */}
+            <div className="absolute bottom-6 w-8 h-1 bg-white rounded-full"></div>
+            
+            {/* Mouth */}
+            <div className="absolute bottom-4 w-6 h-3 border-b-2 border-white rounded-full animate-smile"></div>
+          </div>
+          
+          {/* Speaking indicator rings */}
+          <div className="absolute inset-0 border-2 border-white/30 rounded-full animate-ping"></div>
+          <div className="absolute inset-0 border-2 border-white/20 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
+          
+          {/* Speaking animation when AI is responding */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/10 rounded-full animate-speak"></div>
+          )}
+        </div>
+      );
+    } else {
+      return (
+        <div className={`w-32 h-32 bg-gradient-to-br from-pink-500 via-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-2xl float-animation animate-breathe relative overflow-hidden ${isGenderSwitching ? 'animate-gender-switch' : ''}`}>
+          {/* Background glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-500 rounded-full animate-pulse opacity-75"></div>
+          
+          {/* Female Avatar face */}
+          <div className="relative z-10 w-24 h-24 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+            {/* Eyes */}
+            <div className="flex space-x-2">
+              <div className="w-3 h-3 bg-white rounded-full animate-blink"></div>
+              <div className="w-3 h-3 bg-white rounded-full animate-blink" style={{animationDelay: '0.1s'}}></div>
+            </div>
+            
+            {/* Eyelashes for female */}
+            <div className="absolute top-8 left-2 w-1 h-1 bg-white rounded-full"></div>
+            <div className="absolute top-8 right-2 w-1 h-1 bg-white rounded-full"></div>
+            
+            {/* Mouth */}
+            <div className="absolute bottom-4 w-6 h-3 border-b-2 border-white rounded-full animate-smile"></div>
+          </div>
+          
+          {/* Speaking indicator rings */}
+          <div className="absolute inset-0 border-2 border-white/30 rounded-full animate-ping"></div>
+          <div className="absolute inset-0 border-2 border-white/20 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
+          
+          {/* Speaking animation when AI is responding */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/10 rounded-full animate-speak"></div>
+          )}
+        </div>
+      );
     }
   };
 
@@ -374,55 +494,83 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
               <p className="text-white/80 text-sm font-medium">Your personal English fluency mentor</p>
             </div>
             
-            {/* Voice Controls */}
-            <div className="flex items-center space-x-2">
-              {/* Language Indicator */}
-              {isSpeaking && currentLanguage && (
-                <div className="px-3 py-1 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <span className="text-xs font-medium text-white">
-                    {currentLanguage === 'pt' ? '🇧🇷 Português' : '🇺🇸 English'}
-                  </span>
-                </div>
-              )}
-              
-              {/* Voice Quality Indicator */}
-              {isVoiceEnabled && (
-                <div className="px-2 py-1 bg-white/10 rounded-lg backdrop-blur-sm">
-                  <span className="text-xs text-white/80">
-                    {isSpeaking ? '🎤 Speaking' : '🔊 Ready'}
-                  </span>
-                </div>
-              )}
-              
-              {/* Voice Toggle */}
-              <button
-                onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm ${
-                  isVoiceEnabled 
-                    ? 'bg-white/20 hover:bg-white/30' 
-                    : 'bg-white/10 hover:bg-white/20'
-                } ${isSpeaking ? 'voice-pulse' : ''}`}
-                title={isVoiceEnabled ? 'Voice enabled' : 'Voice disabled'}
-              >
-                <svg className={`w-5 h-5 ${isVoiceEnabled ? 'text-white' : 'text-white/60'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-              </button>
-              
-              {/* Stop Speaking */}
-              {isSpeaking && (
-                <button
-                  onClick={stopSpeaking}
-                  className="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
-                  title="Stop speaking"
-                >
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9l6 6m0-6l-6 6" />
-                  </svg>
-                </button>
-              )}
-            </div>
+                   {/* Voice Controls */}
+                   <div className="flex items-center space-x-2">
+                     {/* Voice Gender Selection */}
+                     <div className="flex items-center space-x-1 bg-white/10 rounded-lg p-1 backdrop-blur-sm">
+                       <button
+                         onClick={() => switchGender('female')}
+                         disabled={isGenderSwitching}
+                         className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
+                           voiceGender === 'female' 
+                             ? 'bg-white/20 text-white' 
+                             : 'text-white/70 hover:text-white hover:bg-white/10'
+                         } ${isGenderSwitching ? 'opacity-50 cursor-not-allowed' : ''}`}
+                         title="Female voice"
+                       >
+                         👩 Female
+                       </button>
+                       <button
+                         onClick={() => switchGender('male')}
+                         disabled={isGenderSwitching}
+                         className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
+                           voiceGender === 'male' 
+                             ? 'bg-white/20 text-white' 
+                             : 'text-white/70 hover:text-white hover:bg-white/10'
+                         } ${isGenderSwitching ? 'opacity-50 cursor-not-allowed' : ''}`}
+                         title="Male voice"
+                       >
+                         👨 Male
+                       </button>
+                     </div>
+                     
+                     {/* Language Indicator */}
+                     {isSpeaking && currentLanguage && (
+                       <div className="px-3 py-1 bg-white/20 rounded-lg backdrop-blur-sm">
+                         <span className="text-xs font-medium text-white">
+                           {currentLanguage === 'pt' ? '🇧🇷 Português' : '🇺🇸 English'}
+                         </span>
+                       </div>
+                     )}
+                     
+                     {/* Voice Quality Indicator */}
+                     {isVoiceEnabled && (
+                       <div className="px-2 py-1 bg-white/10 rounded-lg backdrop-blur-sm">
+                         <span className="text-xs text-white/80">
+                           {isSpeaking ? '🎤 Speaking' : '🔊 Ready'}
+                         </span>
+                       </div>
+                     )}
+                     
+                     {/* Voice Toggle */}
+                     <button
+                       onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
+                       className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm ${
+                         isVoiceEnabled 
+                           ? 'bg-white/20 hover:bg-white/30' 
+                           : 'bg-white/10 hover:bg-white/20'
+                       } ${isSpeaking ? 'voice-pulse' : ''}`}
+                       title={isVoiceEnabled ? 'Voice enabled' : 'Voice disabled'}
+                     >
+                       <svg className={`w-5 h-5 ${isVoiceEnabled ? 'text-white' : 'text-white/60'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                       </svg>
+                     </button>
+                     
+                     {/* Stop Speaking */}
+                     {isSpeaking && (
+                       <button
+                         onClick={stopSpeaking}
+                         className="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
+                         title="Stop speaking"
+                       >
+                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9l6 6m0-6l-6 6" />
+                         </svg>
+                       </button>
+                     )}
+                   </div>
           </div>
           <button
             onClick={onClose}
@@ -439,52 +587,39 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
           ref={chatWindowRef}
           className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-slate-50 to-white"
         >
-          {messages.length === 0 && (
-            <div className="text-center mt-12 animate-fade-in">
-              <div className="relative mx-auto mb-6 w-32 h-32">
-                {/* AI Avatar Container */}
-                <div className="w-32 h-32 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-2xl float-animation animate-breathe relative overflow-hidden">
-                  {/* Background glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 rounded-full animate-pulse opacity-75"></div>
-                  
-                  {/* Avatar face */}
-                  <div className="relative z-10 w-24 h-24 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    {/* Eyes */}
-                    <div className="flex space-x-2">
-                      <div className="w-3 h-3 bg-white rounded-full animate-blink"></div>
-                      <div className="w-3 h-3 bg-white rounded-full animate-blink" style={{animationDelay: '0.1s'}}></div>
-                    </div>
-                    
-                    {/* Mouth */}
-                    <div className="absolute bottom-4 w-6 h-3 border-b-2 border-white rounded-full animate-smile"></div>
-                  </div>
-                  
-                  {/* Speaking indicator rings */}
-                  <div className="absolute inset-0 border-2 border-white/30 rounded-full animate-ping"></div>
-                  <div className="absolute inset-0 border-2 border-white/20 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
-                  
-                  {/* Speaking animation when AI is responding */}
-                  {isLoading && (
-                    <div className="absolute inset-0 bg-white/10 rounded-full animate-speak"></div>
-                  )}
-                </div>
-                
-                {/* Floating particles around avatar */}
-                <div className="absolute -top-2 -left-2 w-2 h-2 bg-purple-400 rounded-full animate-float-particle"></div>
-                <div className="absolute -top-1 -right-3 w-1.5 h-1.5 bg-pink-400 rounded-full animate-float-particle" style={{animationDelay: '1s'}}></div>
-                <div className="absolute -bottom-2 -right-1 w-1 h-1 bg-indigo-400 rounded-full animate-float-particle" style={{animationDelay: '2s'}}></div>
-                <div className="absolute -bottom-1 -left-3 w-1.5 h-1.5 bg-purple-300 rounded-full animate-float-particle" style={{animationDelay: '0.5s'}}></div>
-              </div>
-              
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">Welcome to OBLI 2025 AI Coach!</h3>
-              <p className="text-gray-600 text-lg mb-4">Your personal English fluency mentor is ready to help you prepare for the contest.</p>
-              <div className="flex flex-wrap justify-center gap-2">
-                <span className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">🏆 Contest Preparation</span>
-                <span className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">💬 Real-time Practice</span>
-                <span className="px-4 py-2 bg-pink-100 text-pink-700 rounded-full text-sm font-medium">🎯 Personalized Feedback</span>
-              </div>
-            </div>
-          )}
+                 {messages.length === 0 && (
+                   <div className="text-center mt-12 animate-fade-in">
+                     <div className="relative mx-auto mb-6 w-32 h-32">
+                       {/* AI Avatar Container with Gender Selection */}
+                       <AvatarComponent 
+                         gender={voiceGender} 
+                         isSpeaking={isSpeaking} 
+                         isLoading={isLoading} 
+                       />
+                       
+                       {/* Floating particles around avatar */}
+                       <div className="absolute -top-2 -left-2 w-2 h-2 bg-purple-400 rounded-full animate-float-particle"></div>
+                       <div className="absolute -top-1 -right-3 w-1.5 h-1.5 bg-pink-400 rounded-full animate-float-particle" style={{animationDelay: '1s'}}></div>
+                       <div className="absolute -bottom-2 -right-1 w-1 h-1 bg-indigo-400 rounded-full animate-float-particle" style={{animationDelay: '2s'}}></div>
+                       <div className="absolute -bottom-1 -left-3 w-1.5 h-1.5 bg-purple-300 rounded-full animate-float-particle" style={{animationDelay: '0.5s'}}></div>
+                     </div>
+                     
+                     <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                       Welcome to OBLI 2025 AI Coach!
+                     </h3>
+                     <p className="text-gray-600 text-lg mb-4">
+                       Your personal {voiceGender === 'male' ? 'male' : 'female'} English fluency mentor is ready to help you prepare for the contest.
+                     </p>
+                     <div className="flex flex-wrap justify-center gap-2">
+                       <span className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">🏆 Contest Preparation</span>
+                       <span className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">💬 Real-time Practice</span>
+                       <span className="px-4 py-2 bg-pink-100 text-pink-700 rounded-full text-sm font-medium">🎯 Personalized Feedback</span>
+                       <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                         {voiceGender === 'male' ? '👨 Male Voice' : '👩 Female Voice'}
+                       </span>
+                     </div>
+                   </div>
+                 )}
           
           {messages.map((message) => (
             <div
@@ -493,22 +628,28 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
             >
               <div className={`flex items-start space-x-3 max-w-[85%] ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
                 {/* Avatar */}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 relative ${
-                  message.isUser 
-                    ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
-                    : 'bg-gradient-to-br from-purple-500 to-pink-600'
-                }`}>
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 relative">
                   {message.isUser ? (
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
                   ) : (
                     <div className="relative">
-                      {/* AI Avatar with animated eyes */}
-                      <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                      {/* AI Avatar with gender-based styling */}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm ${
+                        voiceGender === 'male' 
+                          ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
+                          : 'bg-gradient-to-br from-pink-500 to-purple-600'
+                      }`}>
                         <div className="flex space-x-1">
                           <div className="w-1 h-1 bg-white rounded-full animate-blink"></div>
                           <div className="w-1 h-1 bg-white rounded-full animate-blink" style={{animationDelay: '0.1s'}}></div>
+                        </div>
+                        {/* Gender indicator */}
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full flex items-center justify-center text-xs">
+                          {voiceGender === 'male' ? '👨' : '👩'}
                         </div>
                       </div>
                       {/* Speaking indicator for AI */}
@@ -556,21 +697,29 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
             </div>
           ))}
           
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 relative">
-                  {/* Animated AI Avatar */}
-                  <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <div className="flex space-x-1">
-                      <div className="w-1 h-1 bg-white rounded-full animate-blink"></div>
-                      <div className="w-1 h-1 bg-white rounded-full animate-blink" style={{animationDelay: '0.1s'}}></div>
-                    </div>
-                  </div>
-                  {/* Speaking indicator rings */}
-                  <div className="absolute -inset-1 border border-white/30 rounded-full animate-ping"></div>
-                  <div className="absolute -inset-1 border border-white/20 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
-                </div>
+                 {isLoading && (
+                   <div className="flex justify-start">
+                     <div className="flex items-start space-x-3">
+                       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 relative ${
+                         voiceGender === 'male' 
+                           ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
+                           : 'bg-gradient-to-br from-pink-500 to-purple-600'
+                       }`}>
+                         {/* Animated AI Avatar */}
+                         <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                           <div className="flex space-x-1">
+                             <div className="w-1 h-1 bg-white rounded-full animate-blink"></div>
+                             <div className="w-1 h-1 bg-white rounded-full animate-blink" style={{animationDelay: '0.1s'}}></div>
+                           </div>
+                         </div>
+                         {/* Gender indicator */}
+                         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full flex items-center justify-center text-xs">
+                           {voiceGender === 'male' ? '👨' : '👩'}
+                         </div>
+                         {/* Speaking indicator rings */}
+                         <div className="absolute -inset-1 border border-white/30 rounded-full animate-ping"></div>
+                         <div className="absolute -inset-1 border border-white/20 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
+                       </div>
                 <div className="bg-white border border-gray-200 px-5 py-3 rounded-3xl shadow-sm">
                   <div className="flex items-center space-x-3">
                     <div className="flex space-x-1">
