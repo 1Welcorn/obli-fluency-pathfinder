@@ -127,11 +127,41 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
         >
           {messages.length === 0 && (
             <div className="text-center mt-12 animate-fade-in">
-              <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg float-animation">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+              <div className="relative mx-auto mb-6 w-32 h-32">
+                {/* AI Avatar Container */}
+                <div className="w-32 h-32 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 rounded-full flex items-center justify-center shadow-2xl float-animation animate-breathe relative overflow-hidden">
+                  {/* Background glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 rounded-full animate-pulse opacity-75"></div>
+                  
+                  {/* Avatar face */}
+                  <div className="relative z-10 w-24 h-24 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    {/* Eyes */}
+                    <div className="flex space-x-2">
+                      <div className="w-3 h-3 bg-white rounded-full animate-blink"></div>
+                      <div className="w-3 h-3 bg-white rounded-full animate-blink" style={{animationDelay: '0.1s'}}></div>
+                    </div>
+                    
+                    {/* Mouth */}
+                    <div className="absolute bottom-4 w-6 h-3 border-b-2 border-white rounded-full animate-smile"></div>
+                  </div>
+                  
+                  {/* Speaking indicator rings */}
+                  <div className="absolute inset-0 border-2 border-white/30 rounded-full animate-ping"></div>
+                  <div className="absolute inset-0 border-2 border-white/20 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
+                  
+                  {/* Speaking animation when AI is responding */}
+                  {isLoading && (
+                    <div className="absolute inset-0 bg-white/10 rounded-full animate-speak"></div>
+                  )}
+                </div>
+                
+                {/* Floating particles around avatar */}
+                <div className="absolute -top-2 -left-2 w-2 h-2 bg-purple-400 rounded-full animate-float-particle"></div>
+                <div className="absolute -top-1 -right-3 w-1.5 h-1.5 bg-pink-400 rounded-full animate-float-particle" style={{animationDelay: '1s'}}></div>
+                <div className="absolute -bottom-2 -right-1 w-1 h-1 bg-indigo-400 rounded-full animate-float-particle" style={{animationDelay: '2s'}}></div>
+                <div className="absolute -bottom-1 -left-3 w-1.5 h-1.5 bg-purple-300 rounded-full animate-float-particle" style={{animationDelay: '0.5s'}}></div>
               </div>
+              
               <h3 className="text-2xl font-bold text-gray-800 mb-2">Welcome to OBLI 2025 AI Coach!</h3>
               <p className="text-gray-600 text-lg mb-4">Your personal English fluency mentor is ready to help you prepare for the contest.</p>
               <div className="flex flex-wrap justify-center gap-2">
@@ -149,7 +179,7 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
             >
               <div className={`flex items-start space-x-3 max-w-[85%] ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
                 {/* Avatar */}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 relative ${
                   message.isUser 
                     ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
                     : 'bg-gradient-to-br from-purple-500 to-pink-600'
@@ -159,9 +189,19 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   ) : (
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+                    <div className="relative">
+                      {/* AI Avatar with animated eyes */}
+                      <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <div className="flex space-x-1">
+                          <div className="w-1 h-1 bg-white rounded-full animate-blink"></div>
+                          <div className="w-1 h-1 bg-white rounded-full animate-blink" style={{animationDelay: '0.1s'}}></div>
+                        </div>
+                      </div>
+                      {/* Speaking indicator for AI */}
+                      {isLoading && message.id === messages[messages.length - 1]?.id && (
+                        <div className="absolute -inset-1 border border-white/30 rounded-full animate-ping"></div>
+                      )}
+                    </div>
                   )}
                 </div>
                 
@@ -187,10 +227,17 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
           {isLoading && (
             <div className="flex justify-start">
               <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0 relative">
+                  {/* Animated AI Avatar */}
+                  <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <div className="flex space-x-1">
+                      <div className="w-1 h-1 bg-white rounded-full animate-blink"></div>
+                      <div className="w-1 h-1 bg-white rounded-full animate-blink" style={{animationDelay: '0.1s'}}></div>
+                    </div>
+                  </div>
+                  {/* Speaking indicator rings */}
+                  <div className="absolute -inset-1 border border-white/30 rounded-full animate-ping"></div>
+                  <div className="absolute -inset-1 border border-white/20 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
                 </div>
                 <div className="bg-white border border-gray-200 px-5 py-3 rounded-3xl shadow-sm">
                   <div className="flex items-center space-x-3">
