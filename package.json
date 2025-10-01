@@ -9,7 +9,7 @@
     "build:fast": "vite build --mode development",
     "build:prod": "tsc -b && vite build --mode production",
     "preview": "vite preview",
-    "vercel-build": "vite build"
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@google/genai": "^1.18.0",
