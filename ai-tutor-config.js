@@ -1,13 +1,22 @@
-// AI English Tutor Configuration
-// Customize the behavior and instructions for the AI tutor
+// OBLI 2025 Fluency Coach Configuration
+// Customize the behavior and instructions for the OBLI 2025.2 contest preparation
 
-export const AI_TUTOR_CONFIG = {
+export const OBLI_2025_COACH_CONFIG = {
+  // Contest Information
+  contest: {
+    name: "OBLI 2025.2 English Fluency Contest",
+    countdown: "Faltam X dias para a OBLI 2025.2!",
+    levels: ["Junior (4th-5th)", "Level 1 (6th-7th)", "Level 2 (8th-9th)", "Upper/Free"],
+    focus: "Contest preparation and fluency development"
+  },
+
   // Personality Settings
   personality: {
-    tone: "friendly and encouraging",
+    tone: "motivating and empathetic",
     patience: "high",
-    enthusiasm: "moderate",
-    formality: "casual but respectful"
+    enthusiasm: "high",
+    formality: "friendly but professional",
+    language: "bilingual (Portuguese/English)"
   },
 
   // Teaching Approach
