@@ -43,6 +43,7 @@ import OBLIAI from './components/OBLIAI';
 import ProgressDashboard from './components/ProgressDashboard';
 import TeacherProgressView from './components/TeacherProgressView';
 import FluencyInsightsDashboard from './components/FluencyInsightsDashboard';
+import AITutorChat from './components/AITutorChat';
 
 type AppView = 'login' | 'welcome' | 'generating' | 'student_dashboard' | 'module_view' | 'notes_view' | 'challenge_arena' | 'study_materials_view' | 'obli_ai' | 'teacher_dashboard' | 'student_progress_view' | 'progress_dashboard' | 'teacher_progress_view' | 'fluency_insights';
 
@@ -56,6 +57,7 @@ const App: React.FC = () => {
     // UI State
     const [isPortugueseHelpVisible, setIsPortugueseHelpVisible] = useState(false);
     const [isDbInspectorOpen, setIsDbInspectorOpen] = useState(false);
+    const [isAITutorOpen, setIsAITutorOpen] = useState(false);
 
     // Student-specific State
     const [learningPlan, setLearningPlan] = useState<LearningPlan | null>(null);
@@ -396,6 +398,7 @@ const App: React.FC = () => {
                     onViewStudyMaterials={() => setView('study_materials_view')}
                     onViewProgress={() => setView('progress_dashboard')}
                     onViewFluencyInsights={() => setView('fluency_insights')}
+                    onOpenAITutor={() => setIsAITutorOpen(true)}
                     isPortugueseHelpVisible={isPortugueseHelpVisible}
                 />;
             case 'module_view':
@@ -516,6 +519,10 @@ const App: React.FC = () => {
                     currentUserEmail={user.email}
                 />
             )}
+            <AITutorChat
+                isOpen={isAITutorOpen}
+                onClose={() => setIsAITutorOpen(false)}
+            />
         </div>
     );
 };

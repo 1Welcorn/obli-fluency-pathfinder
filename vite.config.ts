@@ -4,8 +4,8 @@ import { defineConfig, loadEnv } from 'vite';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
-      // GitHub Pages configuration
-      base: mode === 'production' ? '/obli-fluency-pathfinder/' : '/',
+      // Vercel configuration
+      base: '/',
       // Optimize build performance
       build: {
         target: 'esnext',
