@@ -76,6 +76,36 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
     return portugueseCount > englishCount ? 'pt' : 'en';
   };
 
+  // Format message text with markdown-like formatting
+  const formatMessageText = (text: string): string => {
+    // First, escape all HTML to prevent XSS
+    let formatted = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+    
+    // Apply markdown formatting
+    formatted = formatted
+      // Bold text: **text** -> <strong>text</strong>
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic text: *text* -> <em>text</em> (simple approach)
+      .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+      // Code text: `text` -> <code>text</code>
+      .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+      // Headers
+      .replace(/^### (.*$)/gm, '<h3 class="font-bold text-base mt-2 mb-1">$1</h3>')
+      .replace(/^## (.*$)/gm, '<h2 class="font-bold text-lg mt-3 mb-2">$1</h2>')
+      .replace(/^# (.*$)/gm, '<h1 class="font-bold text-xl mt-4 mb-3">$1</h1>')
+      // Lists
+      .replace(/^[-*] (.+)$/gm, '<li class="ml-4">• $1</li>')
+      // Line breaks
+      .replace(/\n/g, '<br>');
+    
+    return formatted;
+  };
+
   // Add natural pauses and improve speech flow
   const addNaturalPauses = (text: string): string => {
     return text
@@ -497,7 +527,12 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
                       : 'bg-white text-gray-800 border border-gray-200'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                  <div 
+                    className="message-content text-sm leading-relaxed whitespace-pre-wrap"
+                    dangerouslySetInnerHTML={{ 
+                      __html: formatMessageText(message.text) 
+                    }}
+                  />
                   <div className={`flex items-center justify-between mt-2 ${
                     message.isUser ? 'text-blue-100' : 'text-gray-400'
                   }`}>

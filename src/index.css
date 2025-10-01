@@ -321,6 +321,56 @@ body {
   animation: breathe 4s ease-in-out infinite;
 }
 
+/* Message formatting styles */
+.message-content strong {
+  font-weight: 700;
+  color: inherit;
+}
+
+.message-content em {
+  font-style: italic;
+  color: inherit;
+}
+
+.message-content code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+}
+
+.message-content h1,
+.message-content h2,
+.message-content h3 {
+  margin: 0.5rem 0;
+  line-height: 1.2;
+}
+
+.message-content h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.message-content h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.message-content h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.message-content li {
+  margin: 0.25rem 0;
+  list-style: none;
+}
+
+.message-content br {
+  line-height: 1.5;
+}
+
 /* Speaking animation for voice */
 @keyframes voice-wave {
   0%, 100% {
