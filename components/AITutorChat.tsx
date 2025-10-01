@@ -92,32 +92,53 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-      <div className="chat-container bg-white rounded-2xl shadow-2xl w-full max-w-2xl h-[600px] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-4xl h-[700px] flex flex-col border border-white/20 overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 rounded-t-2xl flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold">Pratique sua Conversação com a I.A.</h2>
-            <p className="text-blue-100 text-sm">Converse em inglês com nossa IA tutor</p>
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-6 flex justify-between items-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/90 via-purple-600/90 to-pink-600/90"></div>
+          <div className="relative z-10 flex items-center space-x-4">
+            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                OBLI 2025 AI Coach
+              </h2>
+              <p className="text-white/80 text-sm font-medium">Your personal English fluency mentor</p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:text-gray-200 text-2xl font-bold chat-bounce"
+            className="relative z-10 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all duration-200 backdrop-blur-sm group"
           >
-            ×
+            <svg className="w-5 h-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
         {/* Chat Window */}
         <div 
           ref={chatWindowRef}
-          className="chat-window flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+          className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-slate-50 to-white"
         >
           {messages.length === 0 && (
-            <div className="text-center text-gray-500 mt-8 animate-fade-in">
-              <div className="text-6xl mb-4 animate-bounce">🤖</div>
-              <p className="text-lg font-medium">Olá! Sou seu tutor de inglês virtual.</p>
-              <p className="text-sm">Digite uma mensagem em inglês para começar a conversar!</p>
+            <div className="text-center mt-12 animate-fade-in">
+              <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg float-animation">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Welcome to OBLI 2025 AI Coach!</h3>
+              <p className="text-gray-600 text-lg mb-4">Your personal English fluency mentor is ready to help you prepare for the contest.</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <span className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">🏆 Contest Preparation</span>
+                <span className="px-4 py-2 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">💬 Real-time Practice</span>
+                <span className="px-4 py-2 bg-pink-100 text-pink-700 rounded-full text-sm font-medium">🎯 Personalized Feedback</span>
+              </div>
             </div>
           )}
           
@@ -126,33 +147,60 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
               key={message.id}
               className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} message-slide-in`}
             >
-              <div
-                className={`message-bubble max-w-[80%] p-3 rounded-2xl ${
-                  message.isUser
-                    ? 'bg-blue-500 text-white user'
-                    : 'bg-white text-gray-800 border border-gray-200 ai'
-                }`}
-              >
-                <p className="text-sm leading-relaxed">{message.text}</p>
-                <p className={`text-xs mt-2 ${
-                  message.isUser ? 'text-blue-100' : 'text-gray-400'
+              <div className={`flex items-start space-x-3 max-w-[85%] ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                {/* Avatar */}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  message.isUser 
+                    ? 'bg-gradient-to-br from-blue-500 to-indigo-600' 
+                    : 'bg-gradient-to-br from-purple-500 to-pink-600'
                 }`}>
-                  {message.timestamp.toLocaleTimeString()}
-                </p>
+                  {message.isUser ? (
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                </div>
+                
+                {/* Message Bubble */}
+                <div
+                  className={`px-5 py-3 rounded-3xl shadow-sm ${
+                    message.isUser
+                      ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white'
+                      : 'bg-white text-gray-800 border border-gray-200'
+                  }`}
+                >
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
+                  <p className={`text-xs mt-2 ${
+                    message.isUser ? 'text-blue-100' : 'text-gray-400'
+                  }`}>
+                    {message.timestamp.toLocaleTimeString()}
+                  </p>
+                </div>
               </div>
             </div>
           ))}
           
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white text-gray-800 border border-gray-200 p-3 rounded-2xl">
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="bg-white border border-gray-200 px-5 py-3 rounded-3xl shadow-sm">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                    <span className="text-sm text-gray-600 font-medium">AI Coach is thinking...</span>
                   </div>
-                  <span className="text-sm loading-dots">IA está pensando</span>
                 </div>
               </div>
             </div>
@@ -160,35 +208,61 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-white border-t border-gray-200 rounded-b-2xl">
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Digite sua mensagem em inglês..."
-              className="chat-input flex-1 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              disabled={isLoading}
-            />
+        <div className="p-6 bg-gradient-to-r from-slate-50 to-white border-t border-gray-100">
+          <div className="flex items-end space-x-3">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message in English..."
+                className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 shadow-sm text-gray-800 placeholder-gray-400"
+                disabled={isLoading}
+              />
+              <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
             <button
               onClick={sendMessage}
               disabled={!inputMessage.trim() || isLoading}
-              className="send-button bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 text-white px-6 py-4 rounded-2xl font-medium transition-all duration-200 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:hover:scale-100"
             >
               {isLoading ? (
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Enviando</span>
+                  <span className="text-sm">Sending</span>
                 </div>
               ) : (
-                'Enviar'
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-semibold">Send</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                </div>
               )}
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-2 text-center">
-            Pressione Enter para enviar • Shift+Enter para nova linha
-          </p>
+          <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
+            <div className="flex items-center space-x-4">
+              <span className="flex items-center space-x-1">
+                <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Enter</kbd>
+                <span>to send</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Shift</kbd>
+                <kbd className="px-2 py-1 bg-gray-100 rounded text-xs">Enter</kbd>
+                <span>for new line</span>
+              </span>
+            </div>
+            <div className="flex items-center space-x-2 text-indigo-600">
+              <div className="w-2 h-2 bg-green-400 rounded-full pulse-glow"></div>
+              <span className="font-medium">AI Coach Online</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
