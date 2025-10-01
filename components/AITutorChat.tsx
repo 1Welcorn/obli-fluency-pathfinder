@@ -18,6 +18,7 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+  const [currentLanguage, setCurrentLanguage] = useState<'pt' | 'en' | null>(null);
   const chatWindowRef = useRef<HTMLDivElement>(null);
   const speechSynthesis = window.speechSynthesis;
 
@@ -37,7 +38,45 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
     };
   }, []);
 
-  // Text-to-Speech function
+  // Language detection function
+  const detectLanguage = (text: string): 'pt' | 'en' => {
+    // Enhanced language detection based on Portuguese words, characters, and patterns
+    const portugueseIndicators = [
+      // Portuguese-specific characters
+      'ã', 'õ', 'ç', 'á', 'é', 'í', 'ó', 'ú', 'â', 'ê', 'ô', 'à', 'è', 'ì', 'ò', 'ù',
+      // Common Portuguese words
+      'que', 'para', 'com', 'uma', 'uma', 'dos', 'das', 'não', 'sim', 'está', 'são',
+      'obrigado', 'obrigada', 'por favor', 'desculpe', 'olá', 'tchau', 'bom dia',
+      'boa tarde', 'boa noite', 'você', 'nós', 'eles', 'elas', 'meu', 'minha', 'seu', 'sua',
+      'muito', 'bem', 'também', 'aqui', 'ali', 'onde', 'quando', 'como', 'porque',
+      'então', 'mas', 'porém', 'contudo', 'todavia', 'assim', 'dessa', 'desse',
+      'fluência', 'inglês', 'português', 'aprender', 'estudar', 'praticar', 'concurso',
+      'obli', 'professor', 'aluno', 'estudante', 'escola', 'universidade'
+    ];
+    
+    const englishIndicators = [
+      'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+      'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+      'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might',
+      'can', 'must', 'shall', 'this', 'that', 'these', 'those', 'a', 'an',
+      'fluency', 'english', 'portuguese', 'learn', 'study', 'practice', 'contest',
+      'teacher', 'student', 'school', 'university', 'hello', 'hi', 'goodbye',
+      'thank you', 'please', 'sorry', 'excuse me', 'how are you', 'what is'
+    ];
+    
+    const textLower = text.toLowerCase();
+    const portugueseCount = portugueseIndicators.filter(indicator => 
+      textLower.includes(indicator)
+    ).length;
+    const englishCount = englishIndicators.filter(indicator => 
+      textLower.includes(indicator)
+    ).length;
+    
+    // If we find more Portuguese indicators than English, it's Portuguese
+    return portugueseCount > englishCount ? 'pt' : 'en';
+  };
+
+  // Text-to-Speech function with language detection
   const speakText = (text: string) => {
     if (!isVoiceEnabled || !speechSynthesis) return;
 
@@ -45,20 +84,42 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
     speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
+    const language = detectLanguage(text);
+    setCurrentLanguage(language);
     
-    // Configure voice settings
-    utterance.rate = 0.9; // Slightly slower for better understanding
-    utterance.pitch = 1.0;
-    utterance.volume = 0.8;
+    // Configure voice settings based on language
+    if (language === 'pt') {
+      // Portuguese settings - faster and more natural
+      utterance.rate = 1.0; // Normal speed for Portuguese
+      utterance.pitch = 1.0;
+      utterance.volume = 0.8;
+      utterance.lang = 'pt-BR'; // Brazilian Portuguese
+    } else {
+      // English settings - slower for learning
+      utterance.rate = 0.85; // Slower for better understanding
+      utterance.pitch = 1.0;
+      utterance.volume = 0.8;
+      utterance.lang = 'en-US'; // US English
+    }
 
-    // Try to use a female English voice for better AI feel
+    // Get voices and select appropriate one
     const voices = speechSynthesis.getVoices();
-    const englishVoice = voices.find(voice => 
-      voice.lang.startsWith('en') && voice.name.includes('Female')
-    ) || voices.find(voice => voice.lang.startsWith('en'));
+    let selectedVoice = null;
+
+    if (language === 'pt') {
+      // Try to find a Brazilian Portuguese voice
+      selectedVoice = voices.find(voice => 
+        voice.lang === 'pt-BR' || voice.lang.startsWith('pt')
+      );
+    } else {
+      // Try to find a female English voice
+      selectedVoice = voices.find(voice => 
+        voice.lang.startsWith('en') && voice.name.includes('Female')
+      ) || voices.find(voice => voice.lang.startsWith('en'));
+    }
     
-    if (englishVoice) {
-      utterance.voice = englishVoice;
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
     }
 
     utterance.onstart = () => setIsSpeaking(true);
@@ -168,6 +229,15 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
             
             {/* Voice Controls */}
             <div className="flex items-center space-x-2">
+              {/* Language Indicator */}
+              {isSpeaking && currentLanguage && (
+                <div className="px-3 py-1 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <span className="text-xs font-medium text-white">
+                    {currentLanguage === 'pt' ? '🇧🇷 Português' : '🇺🇸 English'}
+                  </span>
+                </div>
+              )}
+              
               {/* Voice Toggle */}
               <button
                 onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
@@ -348,7 +418,10 @@ const AITutorChat: React.FC<AITutorChatProps> = ({ isOpen, onClose }) => {
                       <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
                     <span className="text-sm text-gray-600 font-medium">
-                      {isSpeaking ? 'AI Coach is speaking...' : 'AI Coach is thinking...'}
+                      {isSpeaking 
+                        ? `AI Coach is speaking ${currentLanguage === 'pt' ? 'Portuguese' : 'English'}...` 
+                        : 'AI Coach is thinking...'
+                      }
                     </span>
                   </div>
                 </div>
