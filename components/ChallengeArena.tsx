@@ -377,13 +377,13 @@ const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHel
                             {leaderboard.length === 0 ? (
                                 <div className="text-center py-12">
                                     <TrophyIcon className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                                    <h3 className="text-xl font-semibold text-slate-600 mb-2">No Data Yet</h3>
+                                    <h3 className="text-xl font-semibold text-slate-600 mb-2">No Enrolled Students Yet</h3>
                                     <p className="text-slate-500">
-                                        Complete some challenges to see the leaderboard!
+                                        Students need to complete challenges to appear on the leaderboard!
                                     </p>
                                     {isPortugueseHelpVisible && (
                                         <p className="text-sm text-slate-400 italic mt-2">
-                                            Complete alguns desafios para ver o ranking!
+                                            Alunos precisam completar desafios para aparecer no ranking!
                                         </p>
                                     )}
                                 </div>

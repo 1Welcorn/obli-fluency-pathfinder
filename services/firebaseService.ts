@@ -476,6 +476,7 @@ export const getUserChallengeStats = async (userId: string): Promise<{
 };
 
 // Leaderboard Operations
+// This function returns only students who have actually participated in challenges (enrolled/active students)
 export const getStudentLeaderboard = async (limit: number = 10): Promise<StudentLeaderboardEntry[]> => {
     if (!isFirebaseConfigured || !db) throw new Error(CONFIG_ERROR_MESSAGE);
     
@@ -503,6 +504,7 @@ export const getStudentLeaderboard = async (limit: number = 10): Promise<Student
             } as ChallengeSubmission;
         });
         
+        // Only include students who have actually participated in challenges (enrolled/active students)
         if (submissions.length > 0) {
             const totalPoints = submissions.reduce((sum, s) => sum + s.pointsEarned, 0);
             const correctAnswers = submissions.filter(s => s.isCorrect).length;
@@ -548,6 +550,16 @@ export const getStudentLeaderboard = async (limit: number = 10): Promise<Student
             return a.averageTime - b.averageTime;
         })
         .slice(0, limit);
+};
+
+// Alternative function to get leaderboard for students enrolled with a specific teacher
+// This could be used if you implement teacher-student relationships in the future
+export const getStudentLeaderboardByTeacher = async (teacherId: string, limit: number = 10): Promise<StudentLeaderboardEntry[]> => {
+    if (!isFirebaseConfigured || !db) throw new Error(CONFIG_ERROR_MESSAGE);
+    
+    // For now, this returns the same as getStudentLeaderboard since we don't have teacher-student relationships yet
+    // In the future, you could add a field like 'enrolledBy' or 'teacherId' to student documents
+    return getStudentLeaderboard(limit);
 };
 
 export const getChallengeLeaderboard = async (challengeId: string, limit: number = 10): Promise<ChallengeLeaderboard | null> => {
