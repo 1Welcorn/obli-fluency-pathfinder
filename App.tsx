@@ -267,9 +267,10 @@ const App: React.FC = () => {
         }
     };
 
-    // Load leaderboard when user is authenticated
+    // Load leaderboard when user is authenticated (for both students and teachers)
     useEffect(() => {
-        if (user && user.role === 'student') {
+        if (user) {
+            console.log('User authenticated, loading leaderboard. User role:', user.role);
             loadLeaderboard();
         }
     }, [user]);
@@ -314,6 +315,7 @@ const App: React.FC = () => {
                  />;
         case 'challenge_arena':
             console.log('Rendering ChallengeArena with user:', user);
+            console.log('Passing leaderboard data to ChallengeArena:', leaderboard);
             return <ChallengeArena 
                 onBack={() => setView('student_dashboard')}
                 isPortugueseHelpVisible={isPortugueseHelpVisible}

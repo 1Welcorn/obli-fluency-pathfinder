@@ -22,6 +22,11 @@ type ChallengeType = 'riddle' | 'word_hunt' | 'logic_puzzle' | 'word_play' | 'ma
 type ChallengeLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'master';
 
 const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHelpVisible, currentUser, leaderboard: propLeaderboard, onLeaderboardUpdate }) => {
+    console.log('ChallengeArena received props:', { 
+        currentUser, 
+        propLeaderboard, 
+        hasOnLeaderboardUpdate: !!onLeaderboardUpdate 
+    });
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [selectedLevel, setSelectedLevel] = useState<ChallengeLevel>('beginner');
     const [selectedType, setSelectedType] = useState<ChallengeType>('riddle');
