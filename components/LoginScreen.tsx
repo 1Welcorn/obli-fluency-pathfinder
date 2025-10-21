@@ -30,7 +30,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ isPortugueseHelpVisible }) =>
         <DecorativeBlobs />
       </div>
       <div className="relative z-10 w-full max-w-md text-center">
-        <h1 className="text-5xl font-extrabold text-slate-800">OBLI Pathfinder</h1>
+        <h1 className="text-5xl font-extrabold text-slate-800">OBLI Pathfinder - Updated!</h1>
         <p className="text-xl text-slate-600 my-4">Your AI-powered guide to English fluency!</p>
         {isPortugueseHelpVisible && <p className="text-md text-slate-500 italic mb-8">Seu guia com inteligência artificial para a fluência em inglês!</p>}
         
