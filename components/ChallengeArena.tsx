@@ -48,8 +48,8 @@ const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHel
         levelProgress: 45
     };
 
-    // Use real leaderboard data from props, fallback to mock data if not available
-    const leaderboard = propLeaderboard && propLeaderboard.length > 0 ? propLeaderboard : [
+    // Use real leaderboard data from props, only show mock data if no props are provided at all
+    const leaderboard = propLeaderboard !== undefined ? propLeaderboard : [
         { userId: '1', displayName: 'Alice Johnson', email: 'alice@example.com', totalPoints: 250, correctAnswers: 8, totalChallenges: 10, winStreak: 3 },
         { userId: '2', displayName: 'Bob Smith', email: 'bob@example.com', totalPoints: 180, correctAnswers: 6, totalChallenges: 8, winStreak: 1 },
         { userId: '3', displayName: 'Carol Davis', email: 'carol@example.com', totalPoints: 150, correctAnswers: 5, totalChallenges: 7, winStreak: 0 }

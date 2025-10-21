@@ -258,7 +258,9 @@ const App: React.FC = () => {
 
     const loadLeaderboard = async () => {
         try {
+            console.log('Loading leaderboard data...');
             const leaderboardData = await getStudentLeaderboard(10);
+            console.log('Leaderboard data loaded:', leaderboardData);
             setLeaderboard(leaderboardData);
         } catch (error) {
             console.error('Error loading leaderboard:', error);

@@ -480,10 +480,14 @@ export const getUserChallengeStats = async (userId: string): Promise<{
 export const getStudentLeaderboard = async (limit: number = 10): Promise<StudentLeaderboardEntry[]> => {
     if (!isFirebaseConfigured || !db) throw new Error(CONFIG_ERROR_MESSAGE);
     
+    console.log('Getting student leaderboard...');
+    
     // Get all students
     const studentsSnapshot = await db.collection('users')
         .where('role', '==', 'student')
         .get();
+    
+    console.log(`Found ${studentsSnapshot.docs.length} students in database`);
     
     const leaderboard: StudentLeaderboardEntry[] = [];
     
@@ -503,6 +507,8 @@ export const getStudentLeaderboard = async (limit: number = 10): Promise<Student
                 submittedAt: data.submittedAt?.toDate() || new Date(),
             } as ChallengeSubmission;
         });
+        
+        console.log(`Student ${studentData.displayName} has ${submissions.length} challenge submissions`);
         
         // Only include students who have actually participated in challenges (enrolled/active students)
         if (submissions.length > 0) {
@@ -543,13 +549,16 @@ export const getStudentLeaderboard = async (limit: number = 10): Promise<Student
     }
     
     // Sort by total points (descending), then by correct answers, then by average time
-    return leaderboard
+    const sortedLeaderboard = leaderboard
         .sort((a, b) => {
             if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
             if (b.correctAnswers !== a.correctAnswers) return b.correctAnswers - a.correctAnswers;
             return a.averageTime - b.averageTime;
         })
         .slice(0, limit);
+    
+    console.log(`Returning ${sortedLeaderboard.length} students for leaderboard`);
+    return sortedLeaderboard;
 };
 
 // Alternative function to get leaderboard for students enrolled with a specific teacher
