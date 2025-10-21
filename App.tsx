@@ -265,6 +265,13 @@ const App: React.FC = () => {
         }
     };
 
+    // Load leaderboard when user is authenticated
+    useEffect(() => {
+        if (user && user.role === 'student') {
+            loadLeaderboard();
+        }
+    }, [user]);
+
     const renderContent = () => {
         if (isConfigError) return <ConfigErrorScreen />;
         if (isLoading) return <Loader message="Initializing..." />;
@@ -309,6 +316,8 @@ const App: React.FC = () => {
                 onBack={() => setView('student_dashboard')}
                 isPortugueseHelpVisible={isPortugueseHelpVisible}
                 currentUser={user}
+                leaderboard={leaderboard}
+                onLeaderboardUpdate={loadLeaderboard}
             />;
             case 'study_materials_view':
                 return <StudyMaterialsView 

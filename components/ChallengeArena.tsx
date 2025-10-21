@@ -14,12 +14,14 @@ interface ChallengeArenaProps {
     onBack: () => void;
     isPortugueseHelpVisible: boolean;
     currentUser: { uid: string; email: string | null; displayName: string | null; photoURL: string | null } | null;
+    leaderboard?: any[];
+    onLeaderboardUpdate?: () => void;
 }
 
 type ChallengeType = 'riddle' | 'word_hunt' | 'logic_puzzle' | 'word_play' | 'math_challenge' | 'trivia' | 'enigmas';
 type ChallengeLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert' | 'master';
 
-const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHelpVisible, currentUser }) => {
+const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHelpVisible, currentUser, leaderboard: propLeaderboard, onLeaderboardUpdate }) => {
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [selectedLevel, setSelectedLevel] = useState<ChallengeLevel>('beginner');
     const [selectedType, setSelectedType] = useState<ChallengeType>('riddle');
@@ -46,7 +48,8 @@ const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHel
         levelProgress: 45
     };
 
-    const leaderboard = [
+    // Use real leaderboard data from props, fallback to mock data if not available
+    const leaderboard = propLeaderboard && propLeaderboard.length > 0 ? propLeaderboard : [
         { userId: '1', displayName: 'Alice Johnson', email: 'alice@example.com', totalPoints: 250, correctAnswers: 8, totalChallenges: 10, winStreak: 3 },
         { userId: '2', displayName: 'Bob Smith', email: 'bob@example.com', totalPoints: 180, correctAnswers: 6, totalChallenges: 8, winStreak: 1 },
         { userId: '3', displayName: 'Carol Davis', email: 'carol@example.com', totalPoints: 150, correctAnswers: 5, totalChallenges: 7, winStreak: 0 }
@@ -214,6 +217,11 @@ const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHel
             setPointsEarned(points);
             setShowResult(true);
             
+            // Refresh leaderboard after successful submission
+            if (onLeaderboardUpdate) {
+                onLeaderboardUpdate();
+            }
+            
         } catch (error) {
             console.error('Error submitting answer:', error);
             setError('Failed to submit answer. Please try again.');
@@ -284,13 +292,21 @@ const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHel
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-100 p-8">
                 <div className="max-w-4xl mx-auto">
                     <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 mb-8">
-                        <div className="flex items-center gap-4 mb-6">
+                        <div className="flex items-center justify-between mb-6">
                             <button
                                 onClick={() => setShowLeaderboard(false)}
                                 className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
                             >
                                 <ArrowLeftIcon className="h-5 w-5" />
                                 <span className="font-medium">Back to Challenge Arena</span>
+                            </button>
+                            
+                            <button
+                                onClick={onLeaderboardUpdate}
+                                className="flex items-center gap-2 px-3 py-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors"
+                            >
+                                <RefreshIcon className="h-5 w-5" />
+                                <span className="font-medium">Refresh</span>
                             </button>
                         </div>
 
@@ -358,7 +374,21 @@ const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHel
 
                         {/* Full Leaderboard */}
                         <div className="space-y-3">
-                            {leaderboard.map((student, index) => (
+                            {leaderboard.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <TrophyIcon className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                                    <h3 className="text-xl font-semibold text-slate-600 mb-2">No Data Yet</h3>
+                                    <p className="text-slate-500">
+                                        Complete some challenges to see the leaderboard!
+                                    </p>
+                                    {isPortugueseHelpVisible && (
+                                        <p className="text-sm text-slate-400 italic mt-2">
+                                            Complete alguns desafios para ver o ranking!
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                leaderboard.map((student, index) => (
                                 <div
                                     key={student.userId}
                                     className={`flex items-center gap-4 p-4 rounded-lg border-2 ${
@@ -407,7 +437,8 @@ const ChallengeArena: React.FC<ChallengeArenaProps> = ({ onBack, isPortugueseHel
                                         </div>
                                     )}
                                 </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
