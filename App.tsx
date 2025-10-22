@@ -1,23 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { User, LearningPlan, Module, Lesson, Student, Collaborator, CollaboratorPermission, StudyMaterial, Challenge, ChallengeSubmission } from './types';
-import { 
-  onAuthStateChanged, 
-  logout, 
-  getLearningPlan, 
-  saveLearningPlan, 
-  updateLessonInDb, 
-  getStudents, 
-  deleteStudent, 
-  cleanupDuplicateStudents, 
-  addStudyMaterial, 
-  updateStudyMaterial, 
-  deleteStudyMaterial, 
-  subscribeToStudyMaterials, 
-  addChallenge, 
-  submitChallengeAnswer, 
-  getUserChallengeStats, 
-  getStudentLeaderboard, 
-  ensureMainTeacher 
+import {
+  onAuthStateChanged,
+  logout,
+  getLearningPlan,
+  saveLearningPlan,
+  updateLessonInDb,
+  getStudents,
+  deleteStudent,
+  cleanupDuplicateStudents,
+  addStudyMaterial,
+  updateStudyMaterial,
+  deleteStudyMaterial,
+  subscribeToStudyMaterials,
+  addChallenge,
+  submitChallengeAnswer,
+  getUserChallengeStats,
+  getStudentLeaderboard,
+  ensureMainTeacher,
+  handleSignInRedirect
 } from './services/firebaseService';
 import { generateLearningPlan } from './services/geminiService';
 import { isFirebaseConfigured } from './services/firebaseConfig';
@@ -82,6 +83,9 @@ const App: React.FC = () => {
             setIsLoading(false);
             return;
         }
+
+        // Handle redirect result when app initializes
+        handleSignInRedirect().catch(console.error);
 
         const unsubscribe = onAuthStateChanged(async (currentUser) => {
             setUser(currentUser);

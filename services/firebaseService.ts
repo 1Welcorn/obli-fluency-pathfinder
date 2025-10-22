@@ -102,58 +102,15 @@ export const onAuthStateChanged = (callback: (user: User | null) => void): (() =
 export const signInWithGoogle = async (role: UserRole): Promise<void> => {
     if (!isFirebaseConfigured || !auth || !db) throw new Error(CONFIG_ERROR_MESSAGE);
     try {
-        // FIX: Used auth.signInWithPopup (v8 compat)
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user;
-        if (!user) {
-            throw new Error("Sign in failed, user object is null.");
-        }
+        // Store the role in sessionStorage so we can retrieve it after redirect
+        sessionStorage.setItem('pendingRole', role);
 
-        const userDocRef = db.collection('users').doc(user.uid);
-        const userDocSnap = await userDocRef.get();
-
-        if (!userDocSnap.exists) {
-            // Check if this is the designated main teacher email
-            const isDesignatedMainTeacher = user.email === 'f4330252301@gmail.com' && role === 'teacher';
-            
-            // FIX: Used userDocRef.set() and firebase.firestore.FieldValue (v8 compat)
-            await userDocRef.set({
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                role: role,
-                isMainTeacher: isDesignatedMainTeacher, // Set as main teacher if it's the designated email
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            });
-        } else {
-            // User exists, update their role if it's different
-            const existingData = userDocSnap.data()!;
-            const isDesignatedMainTeacher = user.email === 'f4330252301@gmail.com' && role === 'teacher';
-            
-            if (existingData.role !== role) {
-                await userDocRef.update({
-                    role: role,
-                    isMainTeacher: isDesignatedMainTeacher, // Set as main teacher if it's the designated email
-                    lastRoleChange: firebase.firestore.FieldValue.serverTimestamp(),
-                });
-                
-                // Wait a moment for the update to propagate before the auth state change fires
-                await new Promise(resolve => setTimeout(resolve, 100));
-            } else if (isDesignatedMainTeacher && !existingData.isMainTeacher) {
-                // If this is the designated main teacher but not currently set as main, update it
-                await userDocRef.update({
-                    isMainTeacher: true,
-                    lastMainTeacherUpdate: firebase.firestore.FieldValue.serverTimestamp(),
-                });
-                
-                // Wait a moment for the update to propagate
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-        }
+        // Use redirect instead of popup to avoid popup blockers
+        await auth.signInWithRedirect(provider);
     } catch (error: any) {
         console.error("Error during Google Sign-In:", error);
-        
+        sessionStorage.removeItem('pendingRole');
+
         // Provide more specific error messages
         if (error.code === 'auth/popup-closed-by-user') {
             throw new Error("Sign-in was cancelled. Please try again.");
@@ -168,6 +125,67 @@ export const signInWithGoogle = async (role: UserRole): Promise<void> => {
         } else {
             throw new Error(error.message || "Sign-in failed. Please try again.");
         }
+    }
+};
+
+/**
+ * Handles the redirect result after Google Sign-In.
+ * This should be called when the app initializes.
+ */
+export const handleSignInRedirect = async (): Promise<void> => {
+    if (!isFirebaseConfigured || !auth || !db) return;
+
+    try {
+        const result = await auth.getRedirectResult();
+        if (!result || !result.user) {
+            return;
+        }
+
+        const user = result.user;
+        const role = sessionStorage.getItem('pendingRole') as UserRole || 'student';
+        sessionStorage.removeItem('pendingRole');
+
+        const userDocRef = db.collection('users').doc(user.uid);
+        const userDocSnap = await userDocRef.get();
+
+        if (!userDocSnap.exists) {
+            // Check if this is the designated main teacher email
+            const isDesignatedMainTeacher = user.email === 'f4330252301@gmail.com' && role === 'teacher';
+
+            await userDocRef.set({
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                role: role,
+                isMainTeacher: isDesignatedMainTeacher,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+        } else {
+            // User exists, update their role if it's different
+            const existingData = userDocSnap.data()!;
+            const isDesignatedMainTeacher = user.email === 'f4330252301@gmail.com' && role === 'teacher';
+
+            if (existingData.role !== role) {
+                await userDocRef.update({
+                    role: role,
+                    isMainTeacher: isDesignatedMainTeacher,
+                    lastRoleChange: firebase.firestore.FieldValue.serverTimestamp(),
+                });
+
+                await new Promise(resolve => setTimeout(resolve, 100));
+            } else if (isDesignatedMainTeacher && !existingData.isMainTeacher) {
+                await userDocRef.update({
+                    isMainTeacher: true,
+                    lastMainTeacherUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+                });
+
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        }
+    } catch (error: any) {
+        console.error("Error handling redirect result:", error);
+        sessionStorage.removeItem('pendingRole');
     }
 };
 
